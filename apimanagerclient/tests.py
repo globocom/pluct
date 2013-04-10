@@ -64,6 +64,7 @@ class ResourceSchemaMock(MagicMock):
     )
 
 
+
 class ResourceTestCase(unittest.TestCase):
     def setUp(self):
         super(ResourceTestCase, self).setUp()
@@ -73,12 +74,58 @@ class ResourceTestCase(unittest.TestCase):
         self.my_resource = Resource(name='foo', service_url='http://my-api.com/v1')
 
     def test_should_obtain_service_url(self):
-        my_resource = Resource(name='foo', service_url='http://my-api.com/v1')
-        self.assertEqual(my_resource.url, 'http://my-api.com/v1/foo')
+        self.assertEqual(self.my_resource.url, 'http://my-api.com/v1/foo')
 
+    def test_should_call_alloewd_metods_on_server(self):
+        self.request_mock.assert_called_with(
+            url='http://my-api.com/v1/foo/schema', params={'format': 'json'}
+        )
     def test_should_store_allowed_methods(self):
-        my_resource = Resource(name='foo', service_url='http://my-api.com/v1')
-        self.assertEqual(my_resource.methods, ['get',])
+        self.assertEqual(self.my_resource.methods, ['get',])
+
+
+class ResourceItemsMock(MagicMock):
+    content = json.dumps({
+        'objects': [
+            {
+                'foo': 'bar'
+            },
+            {
+                'foo': 'bar'
+            },
+        ],
+        }
+    )
+
+
+class ResourceListTestCase(unittest.TestCase):
+
+
+    def __init__(self, methodName='runTest'):
+        super(ResourceListTestCase, self).__init__(methodName)
+        self.request_mock = patch('requests.get').start()
+        self.request_mock.return_value = ResourceItemsMock()
+
+    @patch('apimanagerclient.service.Resource._get_allowed_methods')
+    def test_should_be_possible_obtain_all_elementos_of_the_resource(self, mock):
+        self.my_resource = Resource(name='foo', service_url='http://my-api.com/v1')
+        self.my_resource.methods = ['get']
+        expected_element = [
+            {
+                'foo': 'bar'
+            },
+            {
+                'foo': 'bar'
+            },
+        ]
+        self.assertEqual(self.my_resource.all(), expected_element)
+
+    @patch('apimanagerclient.service.Resource._get_allowed_methods')
+    def test_should_be_return_enpty_lit_if_not_have_list_permission(self, mock):
+        self.my_resource = Resource(name='foo', service_url='http://my-api.com/v1')
+        self.my_resource.methods = []
+        self.assertEqual(self.my_resource.all(), [])
+
 
 
 if __name__ == '__main__':
