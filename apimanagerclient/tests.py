@@ -3,12 +3,16 @@
 import json
 
 import unittest
-from mock import patch, MagicMock
+import mock
 from apimanagerclient import Service
 from apimanagerclient.service import Resource
 
 
-class ServiceSchemaMock(MagicMock):
+class ServiceSchemaMock(mock.MagicMock):
+    headers = {
+        'content-type': 'application/json'
+    }
+    status_code = 200
     content = json.dumps({
         "extensions": {
             "list_endpoint": "/v1/extensions/",
@@ -20,23 +24,25 @@ class ServiceSchemaMock(MagicMock):
         }
     })
 
-
+class ResourceFake(Resource):
+    url = 'fake-url'
+    methods = ['get']
 
 class ServiceTestCase(unittest.TestCase):
 
 
     def setUp(self):
         super(ServiceTestCase, self).setUp()
-        self.request_mock = patch('requests.get').start()
+        self.request_mock = mock.patch('requests.get').start()
         self.request_mock.return_value = ServiceSchemaMock()
 
-        patch('apimanagerclient.service.Resource._get_schema').start()
-
+        self.resource_mock = mock.patch('apimanagerclient.service.Resource').start()
+        self.resource_mock.return_value = ResourceFake
 
         self.my_service = Service('http://my-api.com', 'v1')
 
     def test_should_have_url(self):
-        self.assertEqual(self.my_service.url, 'http://my-api.com')
+        self.assertEqual(self.my_service.url, 'http://my-api.com/v1')
 
     def test_should_have_version(self):
         self.assertEqual(self.my_service.version, 'v1')
@@ -51,11 +57,17 @@ class ServiceTestCase(unittest.TestCase):
         self.assertEqual(self.my_service.resources.keys(), [u'portals', u'extensions'])
 
     def test_should_create_resources(self):
-        self.assertIsInstance(self.my_service.extensions, Resource)
-        self.assertIsInstance(self.my_service.portals, Resource)
+        self.assertTrue(self.my_service.extensions)
+        self.assertTrue(self.my_service.portals)
 
 
-class ResourceSchemaMock(MagicMock):
+
+
+class ResourceSchemaMock(mock.MagicMock):
+    headers = {
+        'content-type': 'application/json'
+    }
+    status_code = 200
     content = json.dumps({
         'allowed_list_http_methods': [
             "get"
@@ -68,7 +80,7 @@ class ResourceSchemaMock(MagicMock):
 class ResourceTestCase(unittest.TestCase):
     def setUp(self):
         super(ResourceTestCase, self).setUp()
-        self.request_mock = patch('requests.get').start()
+        self.request_mock = mock.patch('requests.get').start()
         self.request_mock.return_value = ResourceSchemaMock()
 
         self.my_resource = Resource(name='foo', service_url='http://my-api.com/v1')
@@ -84,14 +96,18 @@ class ResourceTestCase(unittest.TestCase):
         self.assertEqual(self.my_resource.methods, ['get',])
 
 
-class ResourceItemsMock(MagicMock):
+class ResourceItemsMock(mock.MagicMock):
+    headers = {
+        'content-type': 'application/json'
+    }
+    status_code = 200
     content = json.dumps({
         'objects': [
             {
                 'foo': 'bar'
             },
             {
-                'foo': 'bar'
+                'baz': 'qux'
             },
         ],
         }
@@ -103,10 +119,10 @@ class ResourceListTestCase(unittest.TestCase):
 
     def __init__(self, methodName='runTest'):
         super(ResourceListTestCase, self).__init__(methodName)
-        self.request_mock = patch('requests.get').start()
+        self.request_mock = mock.patch('requests.get').start()
         self.request_mock.return_value = ResourceItemsMock()
 
-    @patch('apimanagerclient.service.Resource._get_allowed_methods')
+    @mock.patch('apimanagerclient.service.Resource._get_allowed_methods')
     def test_should_be_possible_obtain_all_elementos_of_the_resource(self, mock):
         self.my_resource = Resource(name='foo', service_url='http://my-api.com/v1')
         self.my_resource.methods = ['get']
@@ -115,12 +131,12 @@ class ResourceListTestCase(unittest.TestCase):
                 'foo': 'bar'
             },
             {
-                'foo': 'bar'
+                'baz': 'qux'
             },
         ]
         self.assertEqual(self.my_resource.all(), expected_element)
 
-    @patch('apimanagerclient.service.Resource._get_allowed_methods')
+    @mock.patch('apimanagerclient.service.Resource._get_allowed_methods')
     def test_should_be_return_enpty_lit_if_not_have_list_permission(self, mock):
         self.my_resource = Resource(name='foo', service_url='http://my-api.com/v1')
         self.my_resource.methods = []
