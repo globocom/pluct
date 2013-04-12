@@ -22,11 +22,6 @@ class ResourceTestCase(unittest.TestCase):
     def test_should_obtain_service_url(self):
         self.assertEqual(self.my_resource.url, 'http://my-awesome-api.com/g1/airports')
 
-    def test_should_call_alloewd_metods_on_server(self):
-        self.request_mock.assert_called_with(
-            url='http://my-api.com/v1/foo'
-        )
-
     def test_should_store_PATCH_method(self):
         self.assertIn('PATCH', self.my_resource._methods.keys())
 
@@ -38,6 +33,14 @@ class ResourceTestCase(unittest.TestCase):
 
     def test_should_store_DELETE_method(self):
         self.assertIn('DELETE', self.my_resource._methods.keys())
+
+    def test_should_call_alloewd_metods_on_server(self):
+        self.request_mock.assert_called_with(
+            url='http://my-api.com/v1/foo'
+        )
+
+    def test_should_exists_create_method(self):
+        self.assertTrue(self.my_resource.create)
 
 
 
@@ -67,6 +70,7 @@ class ResourceListTestCase(unittest.TestCase):
             },
         ]
         self.assertEqual(self.my_resource(), expected_element)
+
 
 
 

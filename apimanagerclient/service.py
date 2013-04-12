@@ -44,6 +44,18 @@ class Resource(object):
         self.schema = self._get_schema(service_url=service_url, resource_name=name)
         self.url = self._get_url()
         self._methods = self._get_allowed_methods()
+        self._create_requests_methods()
+
+    def _make_post_method(self, data):
+        return requests.post(self.url, json.dumps(data), headers={'content-type': 'application/json'})
+
+    def _create_requests_methods(self):
+        if 'POST' in self._methods.keys():
+            self.__setattr__('create', self._make_post_method)
+
+
+
+
 
     def _get_schema(self, service_url, resource_name):
         schema_url = os.path.join(service_url, resource_name)
