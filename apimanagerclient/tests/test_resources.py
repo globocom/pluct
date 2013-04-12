@@ -42,6 +42,14 @@ class ResourceTestCase(unittest.TestCase):
     def test_should_exists_create_method(self):
         self.assertTrue(self.my_resource.create)
 
+    def test_should_exists_edit_method(self):
+        self.assertTrue(self.my_resource.edit)
+
+    def test_should_exists_replace_method(self):
+        self.assertTrue(self.my_resource.replace)
+
+    def test_should_exists_delete_method(self):
+        self.assertTrue(self.my_resource.delete)
 
 
 class ResourceListTestCase(unittest.TestCase):

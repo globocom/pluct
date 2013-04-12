@@ -49,9 +49,33 @@ class Resource(object):
     def _make_post_method(self, data):
         return requests.post(self.url, json.dumps(data), headers={'content-type': 'application/json'})
 
+    def _make_edit_method(self, resource_id, data):
+        url = os.path.join(self.url, resource_id)
+        return requests.patch(url, json.dumps(data), headers={'content-type': 'application/json'})
+
+    def _make_replace_method(self, resource_id, data):
+        url = os.path.join(self.url, resource_id)
+        return requests.put(url, json.dumps(data), headers={'content-type': 'application/json'})
+
+    def _make_delete_method(self, resource_id):
+        url = os.path.join(self.url, resource_id)
+        return requests.delete(url, headers={'content-type': 'application/json'})
+
+
     def _create_requests_methods(self):
         if 'POST' in self._methods.keys():
             self.__setattr__('create', self._make_post_method)
+
+        if 'PATCH' in self._methods.keys():
+            self.__setattr__('edit', self._make_edit_method)
+
+        if 'PUT' in self._methods.keys():
+            self.__setattr__('replace', self._make_replace_method)
+
+        if 'DELETE' in self._methods.keys():
+            self.__setattr__('delete', self._make_delete_method)
+
+
 
 
 
