@@ -17,18 +17,19 @@ class ServiceTestCase(unittest.TestCase):
         self.resource_mock = mock.patch('apimanagerclient.service.Resource').start()
         self.resource_mock.return_value = ResourceFake
 
-        self.my_service = Service('http://my-api.com', 'v1')
+        self.my_service = Service('http://my-awesome-api.com', 'v1')
 
     def test_should_have_url(self):
-        self.assertEqual(self.my_service.url, 'http://my-api.com/v1')
+        self.assertEqual(self.my_service.url, 'http://my-awesome-api.com/v1')
 
     def test_should_have_version(self):
         self.assertEqual(self.my_service.version, 'v1')
 
     def test_should_call_the_get_method(self):
         self.request_mock.assert_called_with(
-            url='http://my-api.com/v1/schemas'
+            url='http://my-awesome-api.com/v1/schemas'
         )
+
 
     def test_should_obtain_resources(self):
         self.assertIn({u'collection_name': u'airports'}, self.my_service.resources)

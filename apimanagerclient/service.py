@@ -41,24 +41,34 @@ class Service(object):
 class Resource(object):
 
     def __init__(self, name, service_url):
-        self.url = os.path.join(service_url, name)
-        self.methods = self._get_allowed_methods()
+        self.schema = self._get_schema(service_url=service_url, resource_name=name)
+        self.url = self._get_url()
+        self._methods = self._get_allowed_methods()
 
-    def _get_schema(self):
-        schema_url = os.path.join(self.url, 'schema')
+    def _get_schema(self, service_url, resource_name):
+        schema_url = os.path.join(service_url, resource_name)
         response = requests.get(url=schema_url)
+
         if check_valid_response(response):
             resource_dict = json.loads(response.content)
             return resource_dict
         return None
 
-    def _get_allowed_methods(self):
-        schema = self._get_schema()
-        if schema and 'allowed_list_http_methods' in schema:
-            return schema['allowed_list_http_methods']
-        return []
+    def _get_url(self):
+        if self.schema and 'links' in self.schema:
+            for link in self.schema['links']:
+                if link['rel'] == 'self':
+                    return link['href']
 
-    def all(self):
+    def _get_allowed_methods(self):
+        methods = {}
+        if self.schema and 'links' in self.schema:
+            for link in self.schema['links']:
+                if 'method' in link:
+                    methods[link['method']] = link['rel']
+        return methods
+
+    def __call__(self, *args, **kwargs):
         response = requests.get(url=self.url)
         if check_valid_response(response):
             resource_dict = json.loads(response.content)

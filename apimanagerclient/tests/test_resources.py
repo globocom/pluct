@@ -20,15 +20,25 @@ class ResourceTestCase(unittest.TestCase):
         self.my_resource = Resource(name='foo', service_url='http://my-api.com/v1')
 
     def test_should_obtain_service_url(self):
-        self.assertEqual(self.my_resource.url, 'http://my-api.com/v1/foo')
+        self.assertEqual(self.my_resource.url, 'http://my-awesome-api.com/g1/airports')
 
     def test_should_call_alloewd_metods_on_server(self):
         self.request_mock.assert_called_with(
-            url='http://my-api.com/v1/foo/schema'
+            url='http://my-api.com/v1/foo'
         )
 
-    def test_should_store_allowed_methods(self):
-        self.assertEqual(self.my_resource.methods, ['get',])
+    def test_should_store_PATCH_method(self):
+        self.assertIn('PATCH', self.my_resource._methods.keys())
+
+    def test_should_store_PUT_method(self):
+        self.assertIn('PUT', self.my_resource._methods.keys())
+
+    def test_should_store_POST_method(self):
+        self.assertIn('POST', self.my_resource._methods.keys())
+
+    def test_should_store_DELETE_method(self):
+        self.assertIn('DELETE', self.my_resource._methods.keys())
+
 
 
 class ResourceListTestCase(unittest.TestCase):
@@ -56,7 +66,7 @@ class ResourceListTestCase(unittest.TestCase):
                 u'resource_id': u"recife"
             },
         ]
-        self.assertEqual(self.my_resource.all(), expected_element)
+        self.assertEqual(self.my_resource(), expected_element)
 
 
 
