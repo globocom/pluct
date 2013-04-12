@@ -14,7 +14,7 @@ class InvalidSchemaException(Exception):
 
 
 class Service(object):
-    def __init__(self, url, version):
+    def __init__(self, url, version=''):
         self.url = os.path.join(url, version)
         self.version = version
 
