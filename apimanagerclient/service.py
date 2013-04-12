@@ -8,6 +8,7 @@ import requests
 def check_valid_response(response):
     return response.status_code == 200 and 'application/json' in response.headers['content-type']
 
+
 class InvalidSchemaException(Exception):
     pass
 
@@ -61,7 +62,6 @@ class Resource(object):
         url = os.path.join(self.url, resource_id)
         return requests.delete(url, headers={'content-type': 'application/json'})
 
-
     def _create_requests_methods(self):
         if 'POST' in self._methods.keys():
             self.__setattr__('create', self._make_post_method)
@@ -74,12 +74,6 @@ class Resource(object):
 
         if 'DELETE' in self._methods.keys():
             self.__setattr__('delete', self._make_delete_method)
-
-
-
-
-
-
 
     def _get_schema(self, service_url, resource_name):
         schema_url = os.path.join(service_url, resource_name)
@@ -104,7 +98,7 @@ class Resource(object):
                     methods[link['method']] = link['rel']
         return methods
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self):
         response = requests.get(url=self.url)
         if check_valid_response(response):
             resource_dict = json.loads(response.content)
