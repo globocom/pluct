@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 import unittest
 import mock
-from apimanagerclient.service import Resource
-from apimanagerclient.tests.mocks import ResourceSchemaMock, ResourceItemsMock
+from jsonschema.service import Resource
+from jsonschema.tests.mocks import ResourceSchemaMock, ResourceItemsMock
 
 
 class ResourceFake(Resource):
@@ -59,7 +59,7 @@ class ResourceListTestCase(unittest.TestCase):
         self.request_mock = mock.patch('requests.get').start()
         self.request_mock.return_value = ResourceItemsMock()
 
-    @mock.patch('apimanagerclient.service.Resource._get_allowed_methods')
+    @mock.patch('jsonschema.service.Resource._get_allowed_methods')
     def test_should_be_possible_obtain_all_elementos_of_the_resource(self, mock):
         self.my_resource = Resource(name='foo', service_url='http://my-api.com/v1')
         self.my_resource.methods = ['get']

@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 import unittest
 import mock
-from apimanagerclient import Service
-from apimanagerclient.tests.mocks import ServiceSchemaMock
-from apimanagerclient.tests.test_resources import ResourceFake
+from jsonschema import Service
+from jsonschema.tests.mocks import ServiceSchemaMock
+from jsonschema.tests.test_resources import ResourceFake
 
 
 class ServiceTestCase(unittest.TestCase):
@@ -14,7 +14,7 @@ class ServiceTestCase(unittest.TestCase):
         self.request_mock = mock.patch('requests.get').start()
         self.request_mock.return_value = ServiceSchemaMock()
 
-        self.resource_mock = mock.patch('apimanagerclient.service.Resource').start()
+        self.resource_mock = mock.patch('jsonschema.service.Resource').start()
         self.resource_mock.return_value = ResourceFake
 
         self.my_service = Service('http://my-awesome-api.com', 'v1')
