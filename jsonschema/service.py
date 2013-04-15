@@ -29,7 +29,7 @@ class Service(object):
             resource_dict = json.loads(response.content)
             return resource_dict['items']
         return None
-    
+
     def _create_resources_attributes(self):
         if self.resources:
             for resource in self.resources:

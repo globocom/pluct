@@ -78,7 +78,3 @@ class ResourceListTestCase(unittest.TestCase):
             },
         ]
         self.assertEqual(self.my_resource(), expected_element)
-
-
-
-

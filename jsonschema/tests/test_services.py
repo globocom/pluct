@@ -30,7 +30,6 @@ class ServiceTestCase(unittest.TestCase):
             url='http://my-awesome-api.com/v1/schemas'
         )
 
-
     def test_should_obtain_resources(self):
         self.assertIn({u'collection_name': u'airports'}, self.my_service.resources)
         self.assertIn({u'collection_name': u'cities'}, self.my_service.resources)

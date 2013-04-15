@@ -73,20 +73,21 @@ class ResourceItemsMock(mock.MagicMock):
         'content-type': 'application/json'
     }
     status_code = 200
-    content = json.dumps({
-        'items': [
-            {
-                u'name': u"Rio de Janeiro",
-                u'resource_id': u"rio-de-janeiro"
-            },
-            {
-                u'name': u"São Paulo",
-                u'resource_id': u"sao-paulo"
-            },
-            {
-                u'name': u"Recife",
-                u'resource_id': u"recife"
-            },
-        ],
+    content = json.dumps(
+        {
+            'items': [
+                {
+                    u'name': u"Rio de Janeiro",
+                    u'resource_id': u"rio-de-janeiro"
+                },
+                {
+                    u'name': u"São Paulo",
+                    u'resource_id': u"sao-paulo"
+                },
+                {
+                    u'name': u"Recife",
+                    u'resource_id': u"recife"
+                },
+            ],
         }
     )
