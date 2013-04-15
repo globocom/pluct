@@ -1,0 +1,3 @@
+include requirements.txt requirements_test.txt
+recursive-include jsonschema *.py
+prune jsonschema/tests

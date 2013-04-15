@@ -1,2 +1,4 @@
 .idea
 *.pyc
+build/
+jsonchema_client.egg-info/
