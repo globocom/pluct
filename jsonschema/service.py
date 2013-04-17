@@ -51,36 +51,49 @@ class Resource(object):
     def get_headers(self):
         header = {}
         header['content-type'] = 'application/json'
-        header['Authorization'] = 'ApiKey redeglobo:10bef894-60d7-11e2-8578-0264c0ff6020'
         return header
 
+    def _make_get_method(self):
+        return requests.get(url=self.url, headers=self.get_headers())
+
     def _make_post_method(self, data):
-        return requests.post(self.url, json.dumps(data), headers=self.get_headers())
+        return requests.post(url=self.url, data=json.dumps(data), headers=self.get_headers())
 
-    def _make_edit_method(self, resource_id, data):
+    def _make_patch_method(self, resource_id, data):
         url = os.path.join(self.url, resource_id)
-        return requests.patch(url, json.dumps(data), headers=self.get_headers())
+        return requests.patch(url=url, data=json.dumps(data), headers=self.get_headers())
 
-    def _make_replace_method(self, resource_id, data):
+    def _make_put_method(self, resource_id, data):
         url = os.path.join(self.url, resource_id)
-        return requests.put(url, json.dumps(data), headers=self.get_headers())
+        return requests.put(url=url, data=json.dumps(data), headers=self.get_headers())
 
     def _make_delete_method(self, resource_id):
         url = os.path.join(self.url, resource_id)
-        return requests.delete(url, headers=self.get_headers())
+        return requests.delete(url=url, headers=self.get_headers())
+
+    def get_request_method(self, link):
+        rel = link['rel']
+        try:
+            method = link['method']
+        except KeyError:
+            method = 'GET'
+        return method, rel
 
     def _create_requests_methods(self):
-        if 'POST' in self._methods.keys():
-            setattr(self, 'create', self._make_post_method)
+        request_type_by_method = {
+            'GET': self._make_get_method,
+            'POST': self._make_post_method,
+            'PATCH': self._make_patch_method,
+            'PUT': self._make_put_method,
+            'DELETE': self._make_delete_method
+        }
 
-        if 'PATCH' in self._methods.keys():
-            setattr(self, 'edit', self._make_edit_method)
+        if self.schema and 'links' in self.schema:
+            for link in self.schema['links']:
+                method, rel = self.get_request_method(link)
 
-        if 'PUT' in self._methods.keys():
-            setattr(self, 'replace', self._make_replace_method)
+                setattr(self, rel, request_type_by_method[method])
 
-        if 'DELETE' in self._methods.keys():
-            setattr(self, 'delete', self._make_delete_method)
 
     def _get_schema(self, service_url, resource_name):
         schema_url = os.path.join(service_url, resource_name)
@@ -98,17 +111,17 @@ class Resource(object):
                     return link['href']
 
     def _get_allowed_methods(self):
-        methods = {}
+        methods = set()
         if self.schema and 'links' in self.schema:
             for link in self.schema['links']:
-                if 'method' in link:
-                    methods[link['method']] = link['rel']
+                method, rel = self.get_request_method(link)
+                methods.add(method)
         return methods
 
-    def __call__(self):
-        response = requests.get(url=self.url)
-        if check_valid_response(response):
-            resource_dict = json.loads(response.content)
-            return resource_dict['items']
-
-        return []
+    # def __call__(self):
+    #     response = requests.get(url=self.url)
+    #     if check_valid_response(response):
+    #         resource_dict = json.loads(response.content)
+    #         return resource_dict['items']
+    #
+    #     return []
