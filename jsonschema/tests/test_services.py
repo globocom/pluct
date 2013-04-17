@@ -11,13 +11,21 @@ class ServiceTestCase(unittest.TestCase):
 
     def setUp(self):
         super(ServiceTestCase, self).setUp()
-        self.request_mock = mock.patch('requests.get').start()
+        self.patch_request = mock.patch('requests.get')
+        self.patch_resource = mock.patch('jsonschema.service.Resource')
+
+        self.request_mock = self.patch_request.start()
         self.request_mock.return_value = ServiceSchemaMock()
 
-        self.resource_mock = mock.patch('jsonschema.service.Resource').start()
+        self.resource_mock = self.patch_resource.start()
         self.resource_mock.return_value = ResourceFake
 
         self.my_service = Service('http://my-awesome-api.com', 'v1')
+
+    def tearDown(self):
+        super(ServiceTestCase, self).tearDown()
+        self.patch_request.stop()
+        self.patch_resource.stop()
 
     def test_should_have_url(self):
         self.assertEqual(self.my_service.url, 'http://my-awesome-api.com/v1')

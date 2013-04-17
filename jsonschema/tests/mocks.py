@@ -43,11 +43,7 @@ class ResourceSchemaMock(mock.MagicMock):
                 u'method': u'PATCH',
                 u'rel': u'edit'
             },
-            {
-                u'href': u'http://my-awesome-api.com/g1/airports/{resource_id}',
-                u'method': u'PUT',
-                u'rel': u'replace'
-            },
+
             {
                 u'href': u'http://my-awesome-api.com/g1/airports/{resource_id}',
                 u'method': u'DELETE',

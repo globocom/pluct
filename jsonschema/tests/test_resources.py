@@ -8,7 +8,10 @@ from jsonschema.tests.mocks import ResourceSchemaMock, ResourceItemsMock
 
 class ResourceFake(Resource):
     url = 'fake-url'
-    methods = ['get']
+    _methods = {u'DELETE': u'delete',
+                u'PATCH': u'edit',
+                u'POST': u'create',
+                u'PUT': u'replace'}
 
 
 class ResourceTestCase(unittest.TestCase):
@@ -25,8 +28,8 @@ class ResourceTestCase(unittest.TestCase):
     def test_should_store_PATCH_method(self):
         self.assertIn('PATCH', self.my_resource._methods.keys())
 
-    def test_should_store_PUT_method(self):
-        self.assertIn('PUT', self.my_resource._methods.keys())
+    def test_should_not_store_PUT_method(self):
+        self.assertNotIn('PUT', self.my_resource._methods.keys())
 
     def test_should_store_POST_method(self):
         self.assertIn('POST', self.my_resource._methods.keys())
@@ -45,8 +48,9 @@ class ResourceTestCase(unittest.TestCase):
     def test_should_exists_edit_method(self):
         self.assertTrue(self.my_resource.edit)
 
-    def test_should_exists_replace_method(self):
-        self.assertTrue(self.my_resource.replace)
+    def test_should_not_exists_replace_method(self):
+        with self.assertRaises(AttributeError):
+            self.my_resource.replace
 
     def test_should_exists_delete_method(self):
         self.assertTrue(self.my_resource.delete)
@@ -54,15 +58,34 @@ class ResourceTestCase(unittest.TestCase):
 
 class ResourceListTestCase(unittest.TestCase):
 
-    def __init__(self, methodName='runTest'):
-        super(ResourceListTestCase, self).__init__(methodName)
-        self.request_mock = mock.patch('requests.get').start()
+    def setUp(self):
+        super(ResourceListTestCase, self).setUp()
+
+        self.fake_schema = {
+            u'links': [
+                {
+                    u'href': u'http://my-awesome-api.com/g1/airports',
+                    u'rel': u'self'
+                },
+            ]
+        }
+
+        self.patch_request = mock.patch('requests.get')
+        self.patch_schema = mock.patch('jsonschema.service.Resource._get_schema')
+
+        self.request_mock = self.patch_request.start()
         self.request_mock.return_value = ResourceItemsMock()
 
-    @mock.patch('jsonschema.service.Resource._get_allowed_methods')
-    def test_should_be_possible_obtain_all_elementos_of_the_resource(self, mock):
+        self.schema_mock = self.patch_schema.start()
+        self.schema_mock.return_value = self.fake_schema
+
+    def tearDown(self):
+        super(ResourceListTestCase, self).tearDown()
+        self.patch_schema.stop()
+        self.patch_request.stop()
+
+    def test_should_be_possible_obtain_all_elements_of_the_resource(self):
         self.my_resource = Resource(name='foo', service_url='http://my-api.com/v1')
-        self.my_resource.methods = ['get']
         expected_element = [
             {
                 u'name': u"Rio de Janeiro",
@@ -77,4 +100,12 @@ class ResourceListTestCase(unittest.TestCase):
                 u'resource_id': u"recife"
             },
         ]
+
         self.assertEqual(self.my_resource(), expected_element)
+
+    def test_should_call_correct_repository(self):
+        self.my_resource = Resource(name='foo', service_url='http://my-api.com/v1')
+        self.my_resource()
+        self.request_mock.assert_called_with(
+            url='http://my-awesome-api.com/g1/airports'
+        )

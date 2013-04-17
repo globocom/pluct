@@ -34,7 +34,8 @@ class Service(object):
         if self.resources:
             for resource in self.resources:
                 resource_instance = Resource(name=resource['collection_name'], service_url=self.url)
-                self.__setattr__(resource['collection_name'], resource_instance)
+                if resource_instance._methods:
+                    setattr(self, resource['collection_name'], resource_instance)
         else:
             raise InvalidSchemaException('{0} not have a valid schema'.format(self.url))
 
@@ -47,33 +48,39 @@ class Resource(object):
         self._methods = self._get_allowed_methods()
         self._create_requests_methods()
 
+    def get_headers(self):
+        header = {}
+        header['content-type'] = 'application/json'
+        header['Authorization'] = 'ApiKey redeglobo:10bef894-60d7-11e2-8578-0264c0ff6020'
+        return header
+
     def _make_post_method(self, data):
-        return requests.post(self.url, json.dumps(data), headers={'content-type': 'application/json'})
+        return requests.post(self.url, json.dumps(data), headers=self.get_headers())
 
     def _make_edit_method(self, resource_id, data):
         url = os.path.join(self.url, resource_id)
-        return requests.patch(url, json.dumps(data), headers={'content-type': 'application/json'})
+        return requests.patch(url, json.dumps(data), headers=self.get_headers())
 
     def _make_replace_method(self, resource_id, data):
         url = os.path.join(self.url, resource_id)
-        return requests.put(url, json.dumps(data), headers={'content-type': 'application/json'})
+        return requests.put(url, json.dumps(data), headers=self.get_headers())
 
     def _make_delete_method(self, resource_id):
         url = os.path.join(self.url, resource_id)
-        return requests.delete(url, headers={'content-type': 'application/json'})
+        return requests.delete(url, headers=self.get_headers())
 
     def _create_requests_methods(self):
         if 'POST' in self._methods.keys():
-            self.__setattr__('create', self._make_post_method)
+            setattr(self, 'create', self._make_post_method)
 
         if 'PATCH' in self._methods.keys():
-            self.__setattr__('edit', self._make_edit_method)
+            setattr(self, 'edit', self._make_edit_method)
 
         if 'PUT' in self._methods.keys():
-            self.__setattr__('replace', self._make_replace_method)
+            setattr(self, 'replace', self._make_replace_method)
 
         if 'DELETE' in self._methods.keys():
-            self.__setattr__('delete', self._make_delete_method)
+            setattr(self, 'delete', self._make_delete_method)
 
     def _get_schema(self, service_url, resource_name):
         schema_url = os.path.join(service_url, resource_name)
