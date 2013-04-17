@@ -171,3 +171,17 @@ class ResourceListTestCase(unittest.TestCase):
         self.my_resource = Resource(name='foo', service_url='http://my-api.com/v1')
         self.my_resource.create({'foo':'bar'})
         self.assertEqual(request_mock.call_args[1]['data'], json.dumps({'foo':'bar'}))
+
+    @mock.patch('requests.delete')
+    def test_should_call_create_with_correct_repository(self, request_mock):
+        request_mock.return_value = ResourceItemsMock()
+        self.my_resource = Resource(name='foo', service_url='http://my-api.com/v1')
+        self.my_resource.delete('resource-id-value')
+        self.assertEqual(request_mock.call_args[1]['url'], 'http://my-awesome-api.com/g1/airports/resource-id-value')
+
+    @mock.patch('requests.delete')
+    def test_should_call_create_with_json_on_content_type(self, request_mock):
+        request_mock.return_value = ResourceItemsMock()
+        self.my_resource = Resource(name='foo', service_url='http://my-api.com/v1')
+        self.my_resource.delete('resource-id-value')
+        self.assertEqual(request_mock.call_args[1]['headers'], {'content-type': 'application/json'})
