@@ -35,7 +35,7 @@ class ServiceTestCase(unittest.TestCase):
 
     def test_should_call_the_get_method(self):
         self.request_mock.assert_called_with(
-            url='http://my-awesome-api.com/v1/schemas'
+            url='http://my-awesome-api.com/v1/schemas', headers={'content-type': 'application/json'}
         )
 
     def test_should_obtain_resources(self):

@@ -3,7 +3,7 @@
 import json
 import unittest
 import mock
-from jsonschema.service import Resource
+from jsonschema.resource import Resource
 from jsonschema.tests.mocks import ResourceSchemaMock, ResourceItemsMock
 
 
