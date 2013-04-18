@@ -49,8 +49,6 @@ class ServiceTestCase(unittest.TestCase):
     def test_should_have_connect_variable(self):
         self.assertEqual(self.my_service.auth, {})
 
-
-
     def test_connect_with_apikey_should_tore_auth_values(self):
         self.my_service.connect('apikey', 'fake-user', 'fake-pass')
 

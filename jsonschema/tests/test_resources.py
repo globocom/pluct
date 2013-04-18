@@ -30,7 +30,6 @@ class ResourceTestCase(unittest.TestCase):
         super(ResourceTestCase, self).tearDown()
         self.patch_request.stop()
 
-
     def test_should_obtain_service_url(self):
         self.assertEqual(self.my_resource.url, 'http://my-awesome-api.com/g1/airports')
 
@@ -74,7 +73,6 @@ class ResourceTestCase(unittest.TestCase):
         )
 
 
-
 class ResourceListTestCase(unittest.TestCase):
 
     def setUp(self):
@@ -114,8 +112,6 @@ class ResourceListTestCase(unittest.TestCase):
         }
 
         self.patch_schema = mock.patch('jsonschema.service.Resource._get_schema')
-
-
         self.schema_mock = self.patch_schema.start()
         self.schema_mock.return_value = self.fake_schema
 
@@ -130,20 +126,21 @@ class ResourceListTestCase(unittest.TestCase):
         self.my_resource = Resource(name='foo', service_url='http://my-api.com/v1')
         expected_element = {
             'items':
-            [
-            {
-                u'name': u"Rio de Janeiro",
-                u'resource_id': u"rio-de-janeiro"
-            },
-            {
-                u'name': u"São Paulo",
-                u'resource_id': u"sao-paulo"
-            },
-            {
-                u'name': u"Recife",
-                u'resource_id': u"recife"
-            },
-        ]}
+                [
+                    {
+                        u'name': u"Rio de Janeiro",
+                        u'resource_id': u"rio-de-janeiro"
+                    },
+                    {
+                        u'name': u"São Paulo",
+                        u'resource_id': u"sao-paulo"
+                    },
+                    {
+                        u'name': u"Recife",
+                        u'resource_id': u"recife"
+                    },
+                ]
+        }
         response = self.my_resource.self()
         self.assertEqual(json.loads(response.content), expected_element)
 
@@ -188,27 +185,26 @@ class ResourceListTestCase(unittest.TestCase):
         self.my_resource.item('resource-id-value')
         self.assertEqual(request_mock.call_args[1]['headers'], {'content-type': 'application/json'})
 
-
     @mock.patch('requests.post')
     def test_should_call_create_with_correct_repository(self, request_mock):
         request_mock.return_value = ResourceItemsMock()
         self.my_resource = Resource(name='foo', service_url='http://my-api.com/v1')
-        self.my_resource.create({'foo':'bar'})
+        self.my_resource.create({'foo': 'bar'})
         self.assertEqual(request_mock.call_args[1]['url'], 'http://my-awesome-api.com/g1/airports')
 
     @mock.patch('requests.post')
     def test_should_call_create_with_json_on_content_type(self, request_mock):
         request_mock.return_value = ResourceItemsMock()
         self.my_resource = Resource(name='foo', service_url='http://my-api.com/v1')
-        self.my_resource.create({'foo':'bar'})
+        self.my_resource.create({'foo': 'bar'})
         self.assertEqual(request_mock.call_args[1]['headers'], {'content-type': 'application/json'})
 
     @mock.patch('requests.post')
     def test_should_call_create_with_correct_data(self, request_mock):
         request_mock.return_value = ResourceItemsMock()
         self.my_resource = Resource(name='foo', service_url='http://my-api.com/v1')
-        self.my_resource.create({'foo':'bar'})
-        self.assertEqual(request_mock.call_args[1]['data'], json.dumps({'foo':'bar'}))
+        self.my_resource.create({'foo': 'bar'})
+        self.assertEqual(request_mock.call_args[1]['data'], json.dumps({'foo': 'bar'}))
 
     @mock.patch('requests.delete')
     def test_should_call_create_with_correct_repository(self, request_mock):
@@ -228,40 +224,40 @@ class ResourceListTestCase(unittest.TestCase):
     def test_should_call_edit_with_correct_repository(self, request_mock):
         request_mock.return_value = ResourceItemsMock()
         self.my_resource = Resource(name='foo', service_url='http://my-api.com/v1')
-        self.my_resource.edit('resource-id-value', {'foo':'bar'})
+        self.my_resource.edit('resource-id-value', {'foo': 'bar'})
         self.assertEqual(request_mock.call_args[1]['url'], 'http://my-awesome-api.com/g1/airports/resource-id-value')
 
     @mock.patch('requests.patch')
     def test_should_call_edit_with_json_on_content_type(self, request_mock):
         request_mock.return_value = ResourceItemsMock()
         self.my_resource = Resource(name='foo', service_url='http://my-api.com/v1')
-        self.my_resource.edit('resource-id-value', {'foo':'bar'})
+        self.my_resource.edit('resource-id-value', {'foo': 'bar'})
         self.assertEqual(request_mock.call_args[1]['headers'], {'content-type': 'application/json'})
 
     @mock.patch('requests.patch')
     def test_should_call_edit_with_correct_data(self, request_mock):
         request_mock.return_value = ResourceItemsMock()
         self.my_resource = Resource(name='foo', service_url='http://my-api.com/v1')
-        self.my_resource.edit('resource-id-value', {'foo':'bar'})
-        self.assertEqual(request_mock.call_args[1]['data'], json.dumps({'foo':'bar'}))
+        self.my_resource.edit('resource-id-value', {'foo': 'bar'})
+        self.assertEqual(request_mock.call_args[1]['data'], json.dumps({'foo': 'bar'}))
 
     @mock.patch('requests.put')
     def test_should_call_replace_with_correct_repository(self, request_mock):
         request_mock.return_value = ResourceItemsMock()
         self.my_resource = Resource(name='foo', service_url='http://my-api.com/v1')
-        self.my_resource.replace('resource-id-value', {'foo':'bar'})
+        self.my_resource.replace('resource-id-value', {'foo': 'bar'})
         self.assertEqual(request_mock.call_args[1]['url'], 'http://my-awesome-api.com/g1/airports/resource-id-value')
 
     @mock.patch('requests.put')
     def test_should_call_replace_with_json_on_content_type(self, request_mock):
         request_mock.return_value = ResourceItemsMock()
         self.my_resource = Resource(name='foo', service_url='http://my-api.com/v1')
-        self.my_resource.replace('resource-id-value', {'foo':'bar'})
+        self.my_resource.replace('resource-id-value', {'foo': 'bar'})
         self.assertEqual(request_mock.call_args[1]['headers'], {'content-type': 'application/json'})
 
     @mock.patch('requests.put')
     def test_should_call_replace_with_correct_data(self, request_mock):
         request_mock.return_value = ResourceItemsMock()
         self.my_resource = Resource(name='foo', service_url='http://my-api.com/v1')
-        self.my_resource.replace('resource-id-value', {'foo':'bar'})
-        self.assertEqual(request_mock.call_args[1]['data'], json.dumps({'foo':'bar'}))
+        self.my_resource.replace('resource-id-value', {'foo': 'bar'})
+        self.assertEqual(request_mock.call_args[1]['data'], json.dumps({'foo': 'bar'}))
