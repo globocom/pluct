@@ -18,13 +18,24 @@ class Service(object):
     def __init__(self, url, version=''):
         self.url = os.path.join(url, version)
         self.version = version
+        self.auth = {}
 
-        schema_url = os.path.join(self.url, 'schemas')
-        self.resources = self._get_service_resources(schema_url)
+        self.resources = self._get_service_resources()
 
         self._create_resources_attributes()
 
-    def _get_service_resources(self, schema_url):
+
+    def connect(self, auth_type, username, password):
+        if auth_type is 'apikey':
+            self.auth = {
+                'type': auth_type,
+                'credentials': '{0}:{1}'.format(username, password)
+            }
+            self._create_resources_attributes()
+
+
+    def _get_service_resources(self):
+        schema_url = os.path.join(self.url, 'schemas')
         response = requests.get(url=schema_url)
         if check_valid_response(response):
             resource_dict = json.loads(response.content)
@@ -34,7 +45,7 @@ class Service(object):
     def _create_resources_attributes(self):
         if self.resources:
             for resource in self.resources:
-                resource_instance = Resource(name=resource['collection_name'], service_url=self.url)
+                resource_instance = Resource(name=resource['collection_name'], service_url=self.url, auth=self.auth)
                 if resource_instance._methods:
                     setattr(self, resource['collection_name'], resource_instance)
         else:
@@ -44,17 +55,22 @@ class Service(object):
 class RequestMethod(object):
 
 
-    def __init__(self, rel, method, href):
+    def __init__(self, rel, method, href, auth):
         self.rel = rel
         self.method = method
         self.href = href
+        self.auth = auth
 
     def get_headers(self):
         header = {}
         header['content-type'] = 'application/json'
+        if self.auth:
+            header['Authorization'] = '{0} {1}'.format(self.auth['type'], self.auth['credentials'])
+
         return header
 
 
+    @property
     def process(self):
         request_type_by_method = {
             'GET': self._make_get_method,
@@ -93,11 +109,14 @@ class RequestMethod(object):
 
 class Resource(object):
 
-    def __init__(self, name, service_url):
+    def __init__(self, name, service_url, auth={}):
+        self.auth = auth
+
         self.schema = self._get_schema(service_url=service_url, resource_name=name)
         self.url = self._get_url()
         self._methods = self._get_allowed_methods()
-        self._create_requests_methods()
+
+        self._create_requests_methods(auth)
 
     def get_headers(self):
         header = {}
@@ -114,21 +133,22 @@ class Resource(object):
             method = 'GET'
         return method, rel, href
 
-    def _create_requests_methods(self):
+    def _create_requests_methods(self, auth):
 
         if self.schema and 'links' in self.schema:
             for link in self.schema['links']:
 
                 method, rel, href = self.get_request_method(link)
 
-                method_class = RequestMethod(rel, method, href)
+                method_class = RequestMethod(rel, method, href, auth)
 
-                setattr(self, rel, method_class.process())
+                setattr(self, rel, method_class.process)
 
 
     def _get_schema(self, service_url, resource_name):
         schema_url = os.path.join(service_url, resource_name)
-        response = requests.get(url=schema_url)
+        method = RequestMethod(rel='get', method='GET', href=schema_url, auth=self.auth)
+        response = method.process()
 
         if check_valid_response(response):
             resource_dict = json.loads(response.content)

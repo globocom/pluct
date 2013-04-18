@@ -67,9 +67,10 @@ class ResourceTestCase(unittest.TestCase):
     def test_should_exists_replace_method(self):
         self.assertTrue(self.my_resource.replace)
 
-    def test_should_call_alloewd_metods_on_server(self):
+    def test_should_call_allowed_metods_on_server(self):
         self.request_mock.assert_called_with(
-            url='http://my-api.com/v1/foo'
+            url='http://my-api.com/v1/foo',
+            headers={'content-type': 'application/json'}
         )
 
 
