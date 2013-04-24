@@ -1,6 +1,9 @@
 api-manager-client
 ==================
 
+[![Build Status](https://drone.io/github.com/globoi/python-jsonschema/status.png)](https://drone.io/github.com/globoi/python-jsonschema/latest)
+
+
 ```python
 from apimanagerclient import Service
 my_service = Service('http://repos.plataformas.glb.com/g1/')
