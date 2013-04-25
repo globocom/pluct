@@ -3,8 +3,8 @@
 import json
 import unittest
 import mock
-from jsonschema.resource import Resource
-from jsonschema.tests.mocks import ResourceSchemaMock, ResourceItemsMock
+from pluct.resource import Resource
+from pluct.tests.mocks import ResourceSchemaMock, ResourceItemsMock
 
 
 class ResourceFake(Resource):
@@ -111,7 +111,7 @@ class ResourceListTestCase(unittest.TestCase):
             ]
         }
 
-        self.patch_schema = mock.patch('jsonschema.service.Resource._get_schema')
+        self.patch_schema = mock.patch('pluct.service.Resource._get_schema')
         self.schema_mock = self.patch_schema.start()
         self.schema_mock.return_value = self.fake_schema
 

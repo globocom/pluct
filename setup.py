@@ -28,12 +28,12 @@ for package in core_packages:
     core_package_data[package] = filter(not_py, findall(package_path))
 
 setup(
-    name='jsonchema-client',
+    name='pluct',
     version='0.1',
     description='python client to Jsonschema APIs',
     author='Marcos Daniel Petry',
     author_email='marcospetry@gmail.com',
-    url='git@github.com:globoi/python-jsonschema.git',
+    url='git@github.com:globocom/pluct.git',
     classifiers=[
         'Develop    ment Status :: 3 - Alpha',
         'Environment :: No Input/Output (Daemon)',
@@ -42,7 +42,7 @@ setup(
         'Operating System :: Unix',
         'Programming Language :: Python :: 2.7',
     ],
-    test_suite='jsonschema.tests',
+    test_suite='pluct.tests',
     packages=core_packages,
     package_data=core_package_data,
     include_package_data=True,

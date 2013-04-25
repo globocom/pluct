@@ -1,4 +1,4 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from jsonschema.service import Service
+from pluct.service import Service

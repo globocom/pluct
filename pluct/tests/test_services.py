@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 import unittest
 import mock
-from jsonschema import Service
-from jsonschema.tests.mocks import ServiceSchemaMock
-from jsonschema.tests.test_resources import ResourceFake
+from pluct import Service
+from pluct.tests.mocks import ServiceSchemaMock
+from pluct.tests.test_resources import ResourceFake
 
 
 class ServiceTestCase(unittest.TestCase):
@@ -12,7 +12,7 @@ class ServiceTestCase(unittest.TestCase):
     def setUp(self):
         super(ServiceTestCase, self).setUp()
         self.patch_request = mock.patch('requests.get')
-        self.patch_resource = mock.patch('jsonschema.service.Resource')
+        self.patch_resource = mock.patch('pluct.service.Resource')
 
         self.request_mock = self.patch_request.start()
         self.request_mock.return_value = ServiceSchemaMock()
@@ -55,7 +55,7 @@ class ServiceTestCase(unittest.TestCase):
         expected_value = {'credentials': 'fake-user:fake-pass', 'type': 'apikey'}
         self.assertEqual(self.my_service.auth, expected_value)
 
-    @mock.patch('jsonschema.service.Service._create_resources_attributes')
+    @mock.patch('pluct.service.Service._create_resources_attributes')
     def test_connect_with_apikey_recreate_resource_attributes(self, my_mock):
         self.my_service.connect('apikey', 'fake-user', 'fake-pass')
 
@@ -71,7 +71,7 @@ class ServiceTestCase(unittest.TestCase):
         self.my_service.connect('other_method', 'fake-user', 'fake-pass')
         self.assertEqual(self.my_service.auth, {})
 
-    @mock.patch('jsonschema.service.Service._create_resources_attributes')
+    @mock.patch('pluct.service.Service._create_resources_attributes')
     def test_should_ignore_when_connect_with_unsuported_method(self, my_mock):
         self.my_service.connect('other_method', 'fake-user', 'fake-pass')
         self.assertFalse(my_mock.called, 'should not regenerate resource methods')

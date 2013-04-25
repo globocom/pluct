@@ -1,7 +1,7 @@
 api-manager-client
 ==================
 
-[![Build Status](https://drone.io/github.com/globoi/python-jsonschema/status.png)](https://drone.io/github.com/globoi/python-jsonschema/latest)
+[![Build Status](https://drone.io/github.com/globocom/pluct/status.png)](https://drone.io/github.com/globocom/pluct/latest)
 
 
 ```python

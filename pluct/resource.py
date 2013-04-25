@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import json
 import os
-from jsonschema.requestmethod import RequestMethod
+from pluct.requestmethod import RequestMethod
 
 
 class Resource(object):
