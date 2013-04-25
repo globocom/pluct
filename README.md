@@ -5,8 +5,8 @@ api-manager-client
 
 
 ```python
-from apimanagerclient import Service
-my_service = Service('http://repos.plataformas.glb.com/g1/')
+from pluct import Service
+my_service = Service('http://yourapi.com/v1/')
 ```
 
 retrieve all items os your resource:
