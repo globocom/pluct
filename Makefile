@@ -14,5 +14,5 @@ violations:
 	@echo "Verificando PEP8 compliance do código"
 	@-pep8 jsonschema --ignore=E501,E126,E127
 
-test: clean
+test: clean deps
 	@nosetests
