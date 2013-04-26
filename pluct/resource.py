@@ -9,17 +9,15 @@ from pluct import schema
 
 class Resource(object):
 
-    def __init__(self, name, service_url, auth={}):
+    def __init__(self, url, auth={}):
         self.auth = auth
-        # self.schema = self._get_schema(service_url=service_url, resource_name=name)
-        self._url = os.path.join(service_url, name)
-        self.url = self._get_url()
+        self.url = url
         self._methods = self._get_allowed_methods()
         self._create_requests_methods(auth)
 
     @property
     def _response(self):
-        request = RequestMethod(rel='get', method='GET', href=self._url, auth=self.auth)
+        request = RequestMethod(rel='get', method='GET', href=self.url, auth=self.auth)
         return request.process()
 
     @property
@@ -41,20 +39,13 @@ class Resource(object):
                 method_class = RequestMethod(rel, method, href, auth)
                 setattr(self, rel, method_class.process)
 
-    # def _get_schema(self, service_url, resource_name):
     def _get_schema(self):
-        method = RequestMethod(rel='get', method='GET', href=self._url, auth=self.auth)
+        method = RequestMethod(rel='get', method='GET', href=self.url, auth=self.auth)
         response = method.process()
         if RequestMethod.check_valid_response(response):
             resource_dict = json.loads(response.content)
             return resource_dict
         return None
-
-    def _get_url(self):
-        if self.schema and 'links' in self.schema:
-            for link in self.schema['links']:
-                if link['rel'] == 'self':
-                    return link['href']
 
     def _get_allowed_methods(self):
         methods = set()
