@@ -27,7 +27,6 @@ class Resource(object):
         schema_url = os.path.join(service_url, resource_name)
         method = RequestMethod(rel='get', method='GET', href=schema_url, auth=self.auth)
         response = method.process()
-
         if RequestMethod.check_valid_response(response):
             resource_dict = json.loads(response.content)
             return resource_dict
@@ -50,8 +49,5 @@ class Resource(object):
     def get_request_method(self, link):
         rel = link['rel']
         href = link['href']
-        try:
-            method = link['method']
-        except KeyError:
-            method = 'GET'
+        method = link.get('method', 'GET')
         return method, rel, href
