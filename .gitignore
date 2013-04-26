@@ -2,4 +2,4 @@
 *.pyc
 build/
 jsonchema_client.egg-info/
-*.swp
+*.sw[a-z]
