@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import json
 import os
-from pluct.requestmethod import RequestMethod
+from pluct.request import Request
 from pluct.resource import Resource
 
 
@@ -22,10 +22,10 @@ class Service(object):
 
     def _get_service_resources(self):
         schema_url = os.path.join(self.url, 'schemas')
-        method = RequestMethod(rel='get', method='GET', href=schema_url, auth=self.auth)
+        method = Request(rel='get', method='GET', href=schema_url, auth=self.auth)
         response = method.process()
 
-        if RequestMethod.check_valid_response(response):
+        if Request.check_valid_response(response):
             resource_dict = json.loads(response.content)
             return resource_dict['items']
         return None

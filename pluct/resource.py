@@ -3,7 +3,7 @@ import json
 import os
 import re
 
-from pluct.requestmethod import RequestMethod
+from pluct.request import Request
 from pluct import schema
 
 
@@ -20,7 +20,7 @@ class Resource(object):
     @property
     def response(self):
         if not self._response:
-            request = RequestMethod(rel='get', method='GET', href=self.url, auth=self.auth)
+            request = Request(rel='get', method='GET', href=self.url, auth=self.auth)
             self._response = request.process()
         return self._response
 
@@ -42,11 +42,11 @@ class Resource(object):
         if self.schema and 'links' in self.schema:
             for link in self.schema['links']:
                 method, rel, href = self.get_request_method(link)
-                method_class = RequestMethod(rel, method, href, auth)
+                method_class = Request(rel, method, href, auth)
                 setattr(self, rel, method_class.process)
 
     def _get_schema(self):
-        if RequestMethod.check_valid_response(self.response):
+        if Request.check_valid_response(self.response):
             resource_dict = json.loads(self.response.content)
             return resource_dict
         return None

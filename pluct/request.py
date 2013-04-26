@@ -3,7 +3,7 @@ import requests
 from uritemplate import expand
 
 
-class RequestMethod(object):
+class Request(object):
 
     def __init__(self, rel, method, href, auth):
         self.rel = rel
@@ -11,23 +11,23 @@ class RequestMethod(object):
         self.href = href
         self.auth = auth
 
-    def _make_get_method(self, resource_id=None):
+    def _get(self, resource_id=None):
         url = self.get_url(resource_id)
         return requests.get(url=url, headers=self.get_headers())
 
-    def _make_post_method(self, data):
+    def _post(self, data):
         url = self.href
         return requests.post(url=url, data=json.dumps(data), headers=self.get_headers())
 
-    def _make_patch_method(self, resource_id, data):
+    def _patch(self, resource_id, data):
         url = self.get_url(resource_id)
         return requests.patch(url=url, data=json.dumps(data), headers=self.get_headers())
 
-    def _make_put_method(self, resource_id, data):
+    def _put(self, resource_id, data):
         url = self.get_url(resource_id)
         return requests.put(url=url, data=json.dumps(data), headers=self.get_headers())
 
-    def _make_delete_method(self, resource_id):
+    def _delete(self, resource_id):
         url = self.get_url(resource_id)
         return requests.delete(url=url, headers=self.get_headers())
 
@@ -47,11 +47,11 @@ class RequestMethod(object):
     @property
     def process(self):
         request_type_by_method = {
-            'GET': self._make_get_method,
-            'POST': self._make_post_method,
-            'PATCH': self._make_patch_method,
-            'PUT': self._make_put_method,
-            'DELETE': self._make_delete_method
+            'GET': self._get,
+            'POST': self._post,
+            'PATCH': self._patch,
+            'PUT': self._put,
+            'DELETE': self._delete,
         }
         return request_type_by_method[self.method]
 
