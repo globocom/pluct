@@ -12,22 +12,28 @@ class Resource(object):
     def __init__(self, url, auth={}):
         self.auth = auth
         self.url = url
+        self._response = None
+        self._data = None
         self._methods = self._get_allowed_methods()
         self._create_requests_methods(auth)
 
     @property
-    def _response(self):
-        request = RequestMethod(rel='get', method='GET', href=self.url, auth=self.auth)
-        return request.process()
+    def response(self):
+        if not self._response:
+            request = RequestMethod(rel='get', method='GET', href=self.url, auth=self.auth)
+            self._response = request.process()
+        return self._response
 
     @property
     def data(self):
-        return self._response.json
+        if not self._data:
+            self._data = self.response.json
+        return self._data
 
     @property
     def schema(self):
         p = re.compile(".*profile=([^;]+);?")
-        schema_url = p.findall(self._response.headers.get('content-type', ''))
+        schema_url = p.findall(self.response.headers.get('content-type', ''))
         if schema_url:
             return schema.get(schema_url[0])
         return self._get_schema()
@@ -40,10 +46,8 @@ class Resource(object):
                 setattr(self, rel, method_class.process)
 
     def _get_schema(self):
-        method = RequestMethod(rel='get', method='GET', href=self.url, auth=self.auth)
-        response = method.process()
-        if RequestMethod.check_valid_response(response):
-            resource_dict = json.loads(response.content)
+        if RequestMethod.check_valid_response(self.response):
+            resource_dict = json.loads(self.response.content)
             return resource_dict
         return None
 
