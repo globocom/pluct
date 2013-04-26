@@ -4,7 +4,7 @@ import unittest
 import mock
 
 from pluct.resource import Resource
-from pluct.tests.mocks import ResourceSchemaMock, ResourceItemsMock
+from pluct.tests.mocks import ResourceSchemaMock, ResourceItemsMock, ResourceMock
 
 
 class ResourceFake(Resource):
@@ -29,6 +29,14 @@ class ResourceTestCase(unittest.TestCase):
     def tearDown(self):
         super(ResourceTestCase, self).tearDown()
         self.patch_request.stop()
+
+    @mock.patch("pluct.schema.get")
+    def test_extract_schema_from_header(self, get_schema):
+        self.request_mock.return_value = ResourceMock()
+        expected = "http://my-api.com/v1/schema"
+        r = Resource(name='foo', service_url='http://my-api.com/v1')
+        r.schema
+        get_schema.assert_called_with(expected)
 
     def test_data(self):
         r = Resource(name='foo', service_url='http://my-api.com/v1')

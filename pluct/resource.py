@@ -1,25 +1,38 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import json
 import os
+import re
+
 from pluct.requestmethod import RequestMethod
+from pluct import schema
 
 
 class Resource(object):
 
     def __init__(self, name, service_url, auth={}):
         self.auth = auth
-        self.schema = self._get_schema(service_url=service_url, resource_name=name)
+        # self.schema = self._get_schema(service_url=service_url, resource_name=name)
         self._url = os.path.join(service_url, name)
         self.url = self._get_url()
         self._methods = self._get_allowed_methods()
         self._create_requests_methods(auth)
 
     @property
-    def data(self):
+    def _response(self):
         request = RequestMethod(rel='get', method='GET', href=self._url, auth=self.auth)
-        response = request.process()
-        return response.json
+        return request.process()
+
+    @property
+    def data(self):
+        return self._response.json
+
+    @property
+    def schema(self):
+        p = re.compile(".*profile=([^;]+);?")
+        schema_url = p.findall(self._response.headers.get('content-type', ''))
+        if schema_url:
+            return schema.get(schema_url[0])
+        return self._get_schema()
 
     def _create_requests_methods(self, auth):
         if self.schema and 'links' in self.schema:
@@ -28,9 +41,9 @@ class Resource(object):
                 method_class = RequestMethod(rel, method, href, auth)
                 setattr(self, rel, method_class.process)
 
-    def _get_schema(self, service_url, resource_name):
-        schema_url = os.path.join(service_url, resource_name)
-        method = RequestMethod(rel='get', method='GET', href=schema_url, auth=self.auth)
+    # def _get_schema(self, service_url, resource_name):
+    def _get_schema(self):
+        method = RequestMethod(rel='get', method='GET', href=self._url, auth=self.auth)
         response = method.process()
         if RequestMethod.check_valid_response(response):
             resource_dict = json.loads(response.content)

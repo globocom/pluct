@@ -27,6 +27,13 @@ class ServiceSchemaMock(mock.MagicMock):
     )
 
 
+class ResourceMock(mock.MagicMock):
+    headers = {
+        'content-type': 'application/json; profile=http://my-api.com/v1/schema'
+    }
+    status_code = 200
+
+
 class ResourceSchemaMock(mock.MagicMock):
     headers = {
         'content-type': 'application/json'
