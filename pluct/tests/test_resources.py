@@ -1,8 +1,8 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import json
 import unittest
 import mock
+
 from pluct.resource import Resource
 from pluct.tests.mocks import ResourceSchemaMock, ResourceItemsMock
 
@@ -29,6 +29,10 @@ class ResourceTestCase(unittest.TestCase):
     def tearDown(self):
         super(ResourceTestCase, self).tearDown()
         self.patch_request.stop()
+
+    def test_data(self):
+        r = Resource(name='foo', service_url='http://my-api.com/v1')
+        self.assertEqual(ResourceSchemaMock().json, r.data)
 
     def test_should_obtain_service_url(self):
         self.assertEqual(self.my_resource.url, 'http://my-awesome-api.com/g1/airports')

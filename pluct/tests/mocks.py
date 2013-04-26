@@ -32,7 +32,7 @@ class ResourceSchemaMock(mock.MagicMock):
         'content-type': 'application/json'
     }
     status_code = 200
-    content = json.dumps({
+    json = {
         u'links': [
             {
                 u'href': u'http://my-awesome-api.com/g1/airports/{resource_id}',
@@ -65,7 +65,10 @@ class ResourceSchemaMock(mock.MagicMock):
         ],
         u'item_count': 2
     }
-    )
+
+    @property
+    def content(self):
+        return json.dumps(self.json)
 
 
 class ResourceItemsMock(mock.MagicMock):

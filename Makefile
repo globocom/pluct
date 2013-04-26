@@ -14,4 +14,4 @@ violations:
 	@-pep8 pluct --ignore=E501,E126,E127
 
 test: clean deps
-	@nosetests
+	@nosetests -s

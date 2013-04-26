@@ -10,13 +10,18 @@ class Resource(object):
     def __init__(self, name, service_url, auth={}):
         self.auth = auth
         self.schema = self._get_schema(service_url=service_url, resource_name=name)
+        self._url = os.path.join(service_url, name)
         self.url = self._get_url()
-
         self._methods = self._get_allowed_methods()
         self._create_requests_methods(auth)
 
-    def _create_requests_methods(self, auth):
+    @property
+    def data(self):
+        request = RequestMethod(rel='get', method='GET', href=self._url, auth=self.auth)
+        response = request.process()
+        return response.json
 
+    def _create_requests_methods(self, auth):
         if self.schema and 'links' in self.schema:
             for link in self.schema['links']:
                 method, rel, href = self.get_request_method(link)
