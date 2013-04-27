@@ -5,14 +5,8 @@ from pluct import schema
 
 
 class SchemaTestCase(TestCase):
-    @patch("requests.get")
-    def test_get_should_returns_a_schema(self, get):
-        instance = schema.get(url="http://myapp.com/schema/myschema")
-        self.assertIsInstance(instance, schema.Schema)
-
-    @patch("requests.get")
-    def test_schema_required(self, get):
-        data = {
+    def setUp(self):
+        self.data = {
             "title": "app schema",
             "properties": {
                 "cname": {"type": "string"},
@@ -22,12 +16,29 @@ class SchemaTestCase(TestCase):
             },
             "required": ["platform", "name"],
         }
+
+    @patch("requests.get")
+    def test_get_should_returns_a_schema(self, get):
+        instance = schema.get(url="http://myapp.com/schema/myschema")
+        self.assertIsInstance(instance, schema.Schema)
+
+    @patch("requests.get")
+    def test_schema_required(self, get):
         mock = Mock()
-        mock.json = data
+        mock.json = self.data
         get.return_value = mock
         s = schema.get(url="http://myapp.com/schema/myschema")
         required = ["platform", "name"]
         self.assertListEqual(required, s.required)
+
+    @patch("requests.get")
+    def test_schema_title(self, get):
+        mock = Mock()
+        mock.json = self.data
+        get.return_value = mock
+        s = schema.get(url="http://myapp.com/schema/myschema")
+        title = "app schema"
+        self.assertEqual(title, s.title)
 
     @patch("requests.get")
     def test_schema_url(self, get):
