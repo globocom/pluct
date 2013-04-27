@@ -22,8 +22,7 @@ class Service(object):
 
     def _get_service_resources(self):
         schema_url = os.path.join(self.url, 'schemas')
-        method = Request(rel='get', method='GET',
-                         href=schema_url, auth=self.auth)
+        method = Request(method='GET', href=schema_url, auth=self.auth)
         response = method.process()
 
         if Request.check_valid_response(response):

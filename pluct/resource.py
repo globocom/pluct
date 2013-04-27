@@ -19,8 +19,7 @@ class Resource(object):
     @property
     def response(self):
         if not self._response:
-            request = Request(rel='get', method='GET',
-                              href=self.url, auth=self.auth)
+            request = Request(method='GET', href=self.url, auth=self.auth)
             self._response = request.process()
         return self._response
 
@@ -42,7 +41,7 @@ class Resource(object):
         if self.schema and 'links' in self.schema:
             for link in self.schema['links']:
                 method, rel, href = self.get_request_method(link)
-                method_class = Request(rel, method, href, auth)
+                method_class = Request(method, href, auth)
                 setattr(self, rel, method_class.process)
 
     def _get_schema(self):
