@@ -42,11 +42,10 @@ class Resource(object):
         return self._schema
 
     def _create_requests_methods(self, auth):
-        if self.schema and 'links' in self.schema:
-            for link in self.schema['links']:
-                method, rel, href = self.get_request_method(link)
-                method_class = Request(method, href, auth)
-                setattr(self, rel, method_class.process)
+        for link in self.schema.get('links', []):
+            method, rel, href = self.get_request_method(link)
+            method_class = Request(method, href, auth)
+            setattr(self, rel, method_class.process)
 
     def _get_schema(self):
         if Request.check_valid_response(self.response):
@@ -56,10 +55,9 @@ class Resource(object):
 
     def _get_allowed_methods(self):
         methods = set()
-        if self.schema and 'links' in self.schema:
-            for link in self.schema['links']:
-                method, rel, href = self.get_request_method(link)
-                methods.add(method)
+        for link in self.schema.get('links', []):
+            method, rel, href = self.get_request_method(link)
+            methods.add(method)
         return methods
 
     def get_request_method(self, link):
