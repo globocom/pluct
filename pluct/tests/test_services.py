@@ -10,7 +10,6 @@ from pluct.tests.test_resources import ResourceFake
 class ServiceTestCase(unittest.TestCase):
 
     def setUp(self):
-        super(ServiceTestCase, self).setUp()
         self.patch_request = mock.patch('requests.get')
         self.patch_resource = mock.patch('pluct.service.Resource')
 
@@ -23,7 +22,6 @@ class ServiceTestCase(unittest.TestCase):
         self.my_service = Service('http://my-awesome-api.com', 'v1')
 
     def tearDown(self):
-        super(ServiceTestCase, self).tearDown()
         self.patch_request.stop()
         self.patch_resource.stop()
 

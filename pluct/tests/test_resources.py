@@ -17,8 +17,6 @@ class ResourceFake(Resource):
 
 class ResourceTestCase(unittest.TestCase):
     def setUp(self):
-        super(ResourceTestCase, self).setUp()
-
         self.patch_request = mock.patch('requests.get')
 
         self.request_mock = self.patch_request.start()
@@ -27,7 +25,6 @@ class ResourceTestCase(unittest.TestCase):
         self.my_resource = Resource(url='http://my-api.com/v1/foo')
 
     def tearDown(self):
-        super(ResourceTestCase, self).tearDown()
         self.patch_request.stop()
 
     @mock.patch("pluct.schema.get")
@@ -88,8 +85,6 @@ class ResourceTestCase(unittest.TestCase):
 class ResourceListTestCase(unittest.TestCase):
 
     def setUp(self):
-        super(ResourceListTestCase, self).setUp()
-
         self.fake_schema = {
             u'links': [
                 {
@@ -128,7 +123,6 @@ class ResourceListTestCase(unittest.TestCase):
         self.schema_mock.return_value = self.fake_schema
 
     def tearDown(self):
-        super(ResourceListTestCase, self).tearDown()
         self.patch_schema.stop()
 
     @mock.patch('requests.get')
