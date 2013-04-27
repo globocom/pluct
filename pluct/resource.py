@@ -13,6 +13,7 @@ class Resource(object):
         self.url = url
         self._response = None
         self._data = None
+        self._schema = None
         self._methods = self._get_allowed_methods()
         self._create_requests_methods(auth)
 
@@ -31,11 +32,14 @@ class Resource(object):
 
     @property
     def schema(self):
-        p = re.compile(".*profile=([^;]+);?")
-        schema_url = p.findall(self.response.headers.get('content-type', ''))
-        if schema_url:
-            return schema.get(schema_url[0])
-        return self._get_schema()
+        if not self._schema:
+            p = re.compile(".*profile=([^;]+);?")
+            schema_url = p.findall(self.response.headers.get('content-type', ''))
+            if schema_url:
+                self._schema = schema.get(schema_url[0])
+            else:
+                self._schema = self._get_schema()
+        return self._schema
 
     def _create_requests_methods(self, auth):
         if self.schema and 'links' in self.schema:
