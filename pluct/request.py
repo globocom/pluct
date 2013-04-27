@@ -6,7 +6,6 @@ from uritemplate import expand
 class Request(object):
 
     def __init__(self, rel, method, href, auth):
-        self.rel = rel
         self.method = method
         self.href = href
         self.auth = auth
