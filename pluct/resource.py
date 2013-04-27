@@ -19,7 +19,8 @@ class Resource(object):
     @property
     def response(self):
         if not self._response:
-            request = Request(rel='get', method='GET', href=self.url, auth=self.auth)
+            request = Request(rel='get', method='GET',
+                              href=self.url, auth=self.auth)
             self._response = request.process()
         return self._response
 

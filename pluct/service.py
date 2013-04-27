@@ -22,7 +22,8 @@ class Service(object):
 
     def _get_service_resources(self):
         schema_url = os.path.join(self.url, 'schemas')
-        method = Request(rel='get', method='GET', href=schema_url, auth=self.auth)
+        method = Request(rel='get', method='GET',
+                         href=schema_url, auth=self.auth)
         response = method.process()
 
         if Request.check_valid_response(response):
@@ -33,11 +34,17 @@ class Service(object):
     def _create_resources_attributes(self):
         if self.resources:
             for resource in self.resources:
-                resource_instance = Resource(name=resource['collection_name'], service_url=self.url, auth=self.auth)
+                resource_instance = Resource(
+                    name=resource['collection_name'],
+                    service_url=self.url, auth=self.auth
+                )
                 if resource_instance._methods:
-                    setattr(self, resource['collection_name'], resource_instance)
+                    setattr(self, resource['collection_name'],
+                            resource_instance)
         else:
-            raise InvalidSchemaException('{0} not have a valid schema'.format(self.url))
+            raise InvalidSchemaException(
+                '{0} not have a valid schema'.format(self.url)
+            )
 
     def connect(self, auth_type, username, password):
         if auth_type is 'apikey':

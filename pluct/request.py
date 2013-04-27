@@ -16,15 +16,18 @@ class Request(object):
 
     def _post(self, data):
         url = self.href
-        return requests.post(url=url, data=json.dumps(data), headers=self.get_headers())
+        return requests.post(url=url, data=json.dumps(data),
+                             headers=self.get_headers())
 
     def _patch(self, resource_id, data):
         url = self.get_url(resource_id)
-        return requests.patch(url=url, data=json.dumps(data), headers=self.get_headers())
+        return requests.patch(url=url, data=json.dumps(data),
+                              headers=self.get_headers())
 
     def _put(self, resource_id, data):
         url = self.get_url(resource_id)
-        return requests.put(url=url, data=json.dumps(data), headers=self.get_headers())
+        return requests.put(url=url, data=json.dumps(data),
+                            headers=self.get_headers())
 
     def _delete(self, resource_id):
         url = self.get_url(resource_id)
@@ -35,7 +38,8 @@ class Request(object):
             'content-type': 'application/json'
         }
         if self.auth:
-            header['Authorization'] = '{0} {1}'.format(self.auth['type'], self.auth['credentials'])
+            header['Authorization'] = '{0} {1}'.format(
+                self.auth['type'], self.auth['credentials'])
 
         return header
 
