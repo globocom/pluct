@@ -7,8 +7,16 @@ from pluct import schema
 
 
 class NewResource(object):
-    def __init__(self, url):
+    def __init__(self, url, auth=None):
+        self.auth = auth
         self.url = url
+        self._data = None
+
+    @property
+    def data(self):
+        if not self._data:
+            self._data = Request('GET', self.url, self.auth).process().json
+        return self._data
 
 
 def get(url, auth=None):
