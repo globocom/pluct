@@ -6,6 +6,17 @@ from pluct.request import Request
 from pluct import schema
 
 
+class NewResource(object):
+    def __init__(self, url):
+        self.url = url
+
+
+def get(url, auth=None):
+    return NewResource(
+        url=url
+    )
+
+
 class Resource(object):
 
     def __init__(self, url, auth={}):
