@@ -41,6 +41,20 @@ class SchemaTestCase(TestCase):
         self.assertEqual(title, s.title)
 
     @patch("requests.get")
+    def test_schema_properties(self, get):
+        mock = Mock()
+        mock.json = self.data
+        get.return_value = mock
+        s = schema.get(url="http://myapp.com/schema/myschema")
+        properties = {
+            "cname": {"type": "string"},
+            "ip": {"type": "string"},
+            "name": {"type": "string"},
+            "platform": {"type": "string"}
+        }
+        self.assertDictEqual(properties, s.properties)
+
+    @patch("requests.get")
     def test_schema_url(self, get):
         url = "http://ble.com/schema"
         s = schema.get(url=url)
