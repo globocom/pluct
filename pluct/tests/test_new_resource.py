@@ -1,7 +1,7 @@
 from unittest import TestCase
 from mock import patch, Mock
 
-from pluct import resource
+from pluct import resource, schema
 
 
 class NewResourceTestCase(TestCase):
@@ -10,7 +10,13 @@ class NewResourceTestCase(TestCase):
         self.data = {
             "name": "repos",
         }
-        mock = Mock(json=self.data)
+        self.schema = schema.Schema(
+            url="url.com"
+        )
+        self.headers = {
+            'content-type': 'application/json; profile=url.com'
+        }
+        mock = Mock(json=self.data, headers=self.headers)
         get.return_value = mock
         self.url = "http://app.com/content"
         self.result = resource.get(url=self.url)
@@ -21,3 +27,6 @@ class NewResourceTestCase(TestCase):
 
     def test_data(self):
         self.assertEqual(self.data, self.result.data)
+
+    def test_schema(self):
+        self.assertEqual(self.schema.url, self.result.schema.url)

@@ -6,6 +6,14 @@ from pluct.request import Request
 from pluct import schema
 
 
+def schema_from_header(headers):
+    p = re.compile(".*profile=([^;]+);?")
+    schema_url = p.findall(headers.get('content-type', ''))
+    if schema_url:
+        return schema.get(schema_url[0])
+    return None
+
+
 class NewResource(object):
     def __init__(self, url, auth=None):
         self.auth = auth
@@ -15,7 +23,11 @@ class NewResource(object):
     @property
     def data(self):
         if not self._data:
-            self._data = Request('GET', self.url, self.auth).process().json
+            response = Request('GET', self.url, self.auth).process()
+            schema = schema_from_header(response.headers)
+            if schema:
+                self.schema = schema
+            self._data = response.json
         return self._data
 
 
