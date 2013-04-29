@@ -6,6 +6,15 @@ from pluct.request import Request
 from pluct import schema
 
 
+def add_methods(resource, s, auth=None):
+    for link in s.links or []:
+        method = link.get("method", "GET")
+        href = link.get("href")
+        rel = link.get("rel")
+        method_class = Request(method, href, auth)
+        setattr(resource, rel, method_class.process)
+
+
 def schema_from_header(headers):
     p = re.compile(".*profile=([^;]+);?")
     schema_url = p.findall(headers.get('content-type', ''))
@@ -24,9 +33,10 @@ class NewResource(object):
     def data(self):
         if not self._data:
             response = Request('GET', self.url, self.auth).process()
-            schema = schema_from_header(response.headers)
-            if schema:
-                self.schema = schema
+            s = schema_from_header(response.headers)
+            if s:
+                self.schema = s
+                add_methods(self, s)
             self._data = response.json()
         return self._data
 
@@ -65,7 +75,7 @@ class Resource(object):
         if not self._schema:
             _schema = schema_from_header(self.response.headers)
             if _schema:
-                self._schema = _schema 
+                self._schema = _schema
             else:
                 self._schema = self._get_schema()
         return self._schema

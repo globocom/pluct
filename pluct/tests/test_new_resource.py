@@ -6,14 +6,28 @@ from pluct import resource, schema
 
 
 class NewResourceTestCase(TestCase):
+    @patch("pluct.schema.get")
     @patch("requests.get")
-    def setUp(self, get):
+    def setUp(self, get, schema_get):
         self.data = {
             "name": "repos",
         }
         self.schema = schema.Schema(
-            url="url.com"
+            url="url.com",
+            links=[
+                {
+                    "href": "/apps/{name}/log",
+                    "method": "GET",
+                    "rel": "log"
+                },
+                {
+                    "href": "/apps/{name}/env",
+                    "method": "GET",
+                    "rel": "env"
+                }
+            ]
         )
+        schema_get.return_value = self.schema
         self.headers = {
             'content-type': 'application/json; profile=url.com'
         }
@@ -33,3 +47,7 @@ class NewResourceTestCase(TestCase):
 
     def test_schema(self):
         self.assertEqual(self.schema.url, self.result.schema.url)
+
+    def test_methods(self):
+        self.assertTrue(hasattr(self.result, "log"))
+        self.assertTrue(hasattr(self.result, "env"))
