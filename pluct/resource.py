@@ -63,10 +63,9 @@ class Resource(object):
     @property
     def schema(self):
         if not self._schema:
-            p = re.compile(".*profile=([^;]+);?")
-            schema_url = p.findall(self.response.headers.get('content-type', ''))
-            if schema_url:
-                self._schema = schema.get(schema_url[0])
+            _schema = schema_from_header(self.response.headers)
+            if _schema:
+                self._schema = _schema 
             else:
                 self._schema = self._get_schema()
         return self._schema
