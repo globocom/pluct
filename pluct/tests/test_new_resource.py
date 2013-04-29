@@ -55,7 +55,8 @@ class NewResourceTestCase(TestCase):
         self.assertTrue(hasattr(self.result, "env"))
         self.result.log()
         get.assert_called_with(url='/apps/repos/log',
-                               headers={'content-type': 'application/json'})
+                               headers={'content-type': 'application/json',
+                                        'Authorization': 't c'})
 
     def test_is_valid_schema_error(self):
         self.assertFalse(self.result.is_valid())

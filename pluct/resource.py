@@ -34,7 +34,7 @@ class NewResource(object):
         self.data = data
         self.schema = schema
         if self.schema:
-            add_methods(self, self.schema)
+            add_methods(self, self.schema, self.auth)
 
     def is_valid(self):
         try:
