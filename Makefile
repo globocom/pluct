@@ -9,9 +9,6 @@ deps:
 
 setup: deps
 
-violations:
-	@echo "Verificando PEP8 compliance do código"
-	@-pep8 pluct --ignore=E501,E126,E127
-
 test: clean deps
 	@nosetests -s -v
+	@flake8 .
