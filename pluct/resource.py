@@ -27,7 +27,7 @@ class NewResource(object):
             schema = schema_from_header(response.headers)
             if schema:
                 self.schema = schema
-            self._data = response.json
+            self._data = response.json()
         return self._data
 
 
@@ -38,7 +38,6 @@ def get(url, auth=None):
 
 
 class Resource(object):
-
     def __init__(self, url, auth={}):
         self.auth = auth
         self.url = url

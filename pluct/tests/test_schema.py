@@ -1,6 +1,5 @@
 from unittest import TestCase
 from mock import patch, Mock
-
 from pluct import schema
 
 
@@ -29,8 +28,10 @@ class SchemaTestCase(TestCase):
             ],
             "required": ["platform", "name"],
         }
-        mock = Mock(json=self.data)
+        mock = Mock()
         get.return_value = mock
+        mock.json.return_value = self.data
+
         self.url = "http://app.com/myschema"
         self.result = schema.get(url=self.url)
 

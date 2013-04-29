@@ -4,6 +4,7 @@ from mock import patch, Mock
 from pluct import resource, schema
 
 
+
 class NewResourceTestCase(TestCase):
     @patch("requests.get")
     def setUp(self, get):
@@ -16,8 +17,10 @@ class NewResourceTestCase(TestCase):
         self.headers = {
             'content-type': 'application/json; profile=url.com'
         }
-        mock = Mock(json=self.data, headers=self.headers)
+        mock = Mock(headers=self.headers)
+        mock.json.return_value = self.data
         get.return_value = mock
+
         self.url = "http://app.com/content"
         self.result = resource.get(url=self.url)
         self.result.data

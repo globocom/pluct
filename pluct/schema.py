@@ -12,7 +12,7 @@ class Schema(object):
 
 
 def get(url, auth=None):
-    data = Request("GET", url, auth).process().json
+    data = Request("GET", url, auth).process().json()
     return Schema(
         url=url,
         required=data.get("required"),
