@@ -1,6 +1,9 @@
 import json
+import re
 import requests
 from uritemplate import expand
+
+
 
 
 class Request(object):
@@ -62,4 +65,17 @@ class Request(object):
         return request_type_by_method[self.method]
 
     def get_url(self, **kwargs):
+        right_parameters = re.compile('{([^\}]+)}').findall(self.href)
+        if set(kwargs.keys()).symmetric_difference(right_parameters):
+            wrong_parameters = set(kwargs.keys()).difference(right_parameters)
+            if wrong_parameters:
+                message_wrong_params = "Wrong parameters: \"{0}\".".format(", ".join(wrong_parameters))
+            else:
+                message_wrong_params = "You did not set any parameter."
+
+            if right_parameters:
+                message_right_params = "Valid parameters: \"{0}\"".format(", ".join(right_parameters))
+            else:
+                message_right_params = "This method takes no parameter."
+            raise TypeError("{0} {1}".format(message_wrong_params, message_right_params))
         return expand(self.href, kwargs)
