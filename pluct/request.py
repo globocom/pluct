@@ -10,27 +10,30 @@ class Request(object):
         self.href = href
         self.auth = auth
 
-    def _get(self, resource_id=None):
-        url = self.get_url(resource_id)
+    def _get(self, **kwargs):
+        url = self.get_url(**kwargs)
         return requests.get(url=url, headers=self.get_headers())
 
-    def _post(self, data):
-        url = self.href
+    def _post(self, **kwargs):
+        data = kwargs.pop('data')
+        url = self.get_url(**kwargs)
         return requests.post(url=url, data=json.dumps(data),
                              headers=self.get_headers())
 
-    def _patch(self, resource_id, data):
-        url = self.get_url(resource_id)
+    def _patch(self, **kwargs):
+        data = kwargs.pop('data')
+        url = self.get_url(**kwargs)
         return requests.patch(url=url, data=json.dumps(data),
                               headers=self.get_headers())
 
-    def _put(self, resource_id, data):
-        url = self.get_url(resource_id)
+    def _put(self, **kwargs):
+        data = kwargs.pop('data')
+        url = self.get_url(**kwargs)
         return requests.put(url=url, data=json.dumps(data),
                             headers=self.get_headers())
 
-    def _delete(self, resource_id):
-        url = self.get_url(resource_id)
+    def _delete(self, **kwargs):
+        url = self.get_url(**kwargs)
         return requests.delete(url=url, headers=self.get_headers())
 
     def get_headers(self):
@@ -58,5 +61,5 @@ class Request(object):
         }
         return request_type_by_method[self.method]
 
-    def get_url(self, resource_id):
-        return expand(self.href, {'resource_id': resource_id})
+    def get_url(self, **kwargs):
+        return expand(self.href, kwargs)
