@@ -37,7 +37,6 @@ class NewResourceTestCase(TestCase):
         self.url = "http://app.com/content"
         auth = {"type": "t", "credentials": "c"}
         self.result = resource.get(url=self.url, auth=auth)
-        self.result.data
         schema_get.assert_called_with("url.com", auth)
 
     def test_get_should_returns_a_resource(self):

@@ -24,27 +24,23 @@ def schema_from_header(headers, auth=None):
 
 
 class NewResource(object):
-    def __init__(self, url, auth=None):
+    def __init__(self, url, data=None, schema=None, auth=None):
         self.auth = auth
         self.url = url
-        self._data = None
-
-    @property
-    def data(self):
-        if not self._data:
-            response = Request('GET', self.url, self.auth).process()
-            s = schema_from_header(response.headers, self.auth)
-            if s:
-                self.schema = s
-                add_methods(self, s)
-            self._data = response.json()
-        return self._data
+        self.data = data
+        self.schema = schema
+        if self.schema:
+            add_methods(self, self.schema)
 
 
 def get(url, auth=None):
+    response = Request('GET', url, auth).process()
+    s = schema_from_header(response.headers, auth)
     return NewResource(
         url=url,
-        auth=auth
+        auth=auth,
+        data=response.json(),
+        schema=s
     )
 
 
