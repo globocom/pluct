@@ -57,5 +57,29 @@ class NewResourceTestCase(TestCase):
         get.assert_called_with(url='/apps/repos/log',
                                headers={'content-type': 'application/json'})
 
-    def test_is_valid(self):
+    def test_is_valid_schema_error(self):
         self.assertFalse(self.result.is_valid())
+
+    @patch("pluct.resource.schema_from_header")
+    @patch("requests.get")
+    def test_is_valid_invalid(self, get, from_header):
+        s = schema.Schema(
+            title="title",
+            url="url.com",
+            required=['platform', 'name'],
+            properties={
+                u'ip': {u'type': u'string'},
+                u'cname': {u'type': u'string'},
+                u'name': {u'type': u'string'},
+                u'platform': {u'type': u'string'}
+            }
+        )
+        from_header.return_value = s
+        data = {
+            u'name': u'repos',
+        }
+        mock = Mock(headers={})
+        mock.json.return_value = data
+        get.return_value = mock
+        result = resource.get(url="appurl.com", auth=None)
+        self.assertFalse(result.is_valid())
