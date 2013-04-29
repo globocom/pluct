@@ -4,8 +4,6 @@ import requests
 from uritemplate import expand
 
 
-
-
 class Request(object):
 
     def __init__(self, method, href, auth):
@@ -51,7 +49,8 @@ class Request(object):
 
     @classmethod
     def check_valid_response(cls, response):
-        return response.status_code == 200 and 'application/json' in response.headers['content-type']
+        return (response.status_code == 200 and
+                'application/json' in response.headers['content-type'])
 
     @property
     def process(self):
@@ -69,13 +68,16 @@ class Request(object):
         if set(kwargs.keys()).symmetric_difference(right_parameters):
             wrong_parameters = set(kwargs.keys()).difference(right_parameters)
             if wrong_parameters:
-                message_wrong_params = "Wrong parameters: \"{0}\".".format(", ".join(wrong_parameters))
+                message_wrong_params = "Wrong parameters: \"{0}\".".format(
+                    ", ".join(wrong_parameters))
             else:
                 message_wrong_params = "You did not set any parameter."
 
             if right_parameters:
-                message_right_params = "Valid parameters: \"{0}\"".format(", ".join(right_parameters))
+                message_right_params = "Valid parameters: \"{0}\"".format(
+                    ", ".join(right_parameters))
             else:
                 message_right_params = "This method takes no parameter."
-            raise TypeError("{0} {1}".format(message_wrong_params, message_right_params))
+            raise TypeError("{0} {1}".format(message_wrong_params,
+                                             message_right_params))
         return expand(self.href, kwargs)

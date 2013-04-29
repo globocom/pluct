@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import unittest
 import mock
-from pluct import Service
+from pluct.service import Service
 from pluct.tests.mocks import ServiceSchemaMock
 from pluct.tests.test_resources import ResourceFake
 

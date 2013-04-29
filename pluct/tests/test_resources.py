@@ -4,7 +4,8 @@ import unittest
 import mock
 
 from pluct.resource import Resource
-from pluct.tests.mocks import ResourceSchemaMock, ResourceItemsMock, ResourceMock
+from pluct.tests.mocks import (ResourceSchemaMock, ResourceItemsMock,
+                               ResourceMock)
 
 
 class ResourceFake(Resource):
@@ -31,7 +32,7 @@ class ResourceTestCase(unittest.TestCase):
     def test_extract_schema_from_header(self, get_schema):
         self.request_mock.return_value = ResourceMock()
         expected = "http://my-api.com/v1/schema"
-        r = Resource(url='http://my-api.com/v1/foo')
+        Resource(url='http://my-api.com/v1/foo')
         get_schema.assert_called_with(expected, None)
 
     def test_data(self):
@@ -96,21 +97,25 @@ class ResourceListTestCase(unittest.TestCase):
                     u'rel': u'create'
                 },
                 {
-                    u'href': u'http://my-awesome-api.com/g1/airports/{resource_id}',
+                    u'href': 'http://my-awesome-api.com/g1/' +
+                             'airports/{resource_id}',
                     u'method': u'DELETE',
                     u'rel': u'delete'
                 },
                 {
-                    u'href': u'http://my-awesome-api.com/g1/airports/{resource_id}',
+                    u'href': 'http://my-awesome-api.com/g1/' +
+                             'airports/{resource_id}',
                     u'rel': u'item'
                 },
                 {
-                    u'href': u'http://my-awesome-api.com/g1/airports/{resource_id}',
+                    u'href': 'http://my-awesome-api.com/g1/' +
+                             'airports/{resource_id}',
                     u'method': u'PATCH',
                     u'rel': u'edit'
                 },
                 {
-                    u'href': u'http://my-awesome-api.com/g1/airports/{resource_id}',
+                    u'href': 'http://my-awesome-api.com/g1/' +
+                             'airports/{resource_id}',
                     u'method': u'PUT',
                     u'rel': u'replace'
                 }
@@ -240,7 +245,8 @@ class ResourceListTestCase(unittest.TestCase):
     def test_should_call_edit_with_correct_repository(self, request_mock):
         request_mock.return_value = ResourceItemsMock()
         self.my_resource = Resource(url='http://my-api.com/v1/foo')
-        self.my_resource.edit(resource_id='resource-id-value', data={'foo': 'bar'})
+        self.my_resource.edit(resource_id='resource-id-value',
+                              data={'foo': 'bar'})
         self.assertEqual(
             request_mock.call_args[1]['url'],
             'http://my-awesome-api.com/g1/airports/resource-id-value'
@@ -250,7 +256,8 @@ class ResourceListTestCase(unittest.TestCase):
     def test_should_call_edit_with_json_on_content_type(self, request_mock):
         request_mock.return_value = ResourceItemsMock()
         self.my_resource = Resource(url='http://my-api.com/v1/foo')
-        self.my_resource.edit(resource_id='resource-id-value', data={'foo': 'bar'})
+        self.my_resource.edit(resource_id='resource-id-value',
+                              data={'foo': 'bar'})
         self.assertEqual(request_mock.call_args[1]['headers'],
                          {'content-type': 'application/json'})
 
@@ -258,7 +265,8 @@ class ResourceListTestCase(unittest.TestCase):
     def test_should_call_edit_with_correct_data(self, request_mock):
         request_mock.return_value = ResourceItemsMock()
         self.my_resource = Resource(url='http://my-api.com/v1/foo')
-        self.my_resource.edit(resource_id='resource-id-value', data={'foo': 'bar'})
+        self.my_resource.edit(resource_id='resource-id-value',
+                              data={'foo': 'bar'})
         self.assertEqual(request_mock.call_args[1]['data'],
                          json.dumps({'foo': 'bar'}))
 
@@ -266,7 +274,8 @@ class ResourceListTestCase(unittest.TestCase):
     def test_should_call_replace_with_correct_repository(self, request_mock):
         request_mock.return_value = ResourceItemsMock()
         self.my_resource = Resource(url='http://my-api.com/v1/foo')
-        self.my_resource.replace(resource_id='resource-id-value', data={'foo': 'bar'})
+        self.my_resource.replace(resource_id='resource-id-value',
+                                 data={'foo': 'bar'})
         self.assertEqual(
             request_mock.call_args[1]['url'],
             'http://my-awesome-api.com/g1/airports/resource-id-value'
@@ -276,7 +285,8 @@ class ResourceListTestCase(unittest.TestCase):
     def test_should_call_replace_with_json_on_content_type(self, request_mock):
         request_mock.return_value = ResourceItemsMock()
         self.my_resource = Resource(url='http://my-api.com/v1/foo')
-        self.my_resource.replace(resource_id='resource-id-value', data={'foo': 'bar'})
+        self.my_resource.replace(resource_id='resource-id-value',
+                                 data={'foo': 'bar'})
         self.assertEqual(request_mock.call_args[1]['headers'],
                          {'content-type': 'application/json'})
 
@@ -284,7 +294,7 @@ class ResourceListTestCase(unittest.TestCase):
     def test_should_call_replace_with_correct_data(self, request_mock):
         request_mock.return_value = ResourceItemsMock()
         self.my_resource = Resource(url='http://my-api.com/v1/foo')
-        self.my_resource.replace(resource_id='resource-id-value', data={'foo': 'bar'})
+        self.my_resource.replace(resource_id='resource-id-value',
+                                 data={'foo': 'bar'})
         self.assertEqual(request_mock.call_args[1]['data'],
                          json.dumps({'foo': 'bar'}))
-
