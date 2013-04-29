@@ -32,8 +32,7 @@ class ResourceTestCase(unittest.TestCase):
         self.request_mock.return_value = ResourceMock()
         expected = "http://my-api.com/v1/schema"
         r = Resource(url='http://my-api.com/v1/foo')
-        # r.schema
-        get_schema.assert_called_with(expected)
+        get_schema.assert_called_with(expected, None)
 
     def test_data(self):
         r = Resource(url='http://my-api.com/v1/foo')

@@ -4,7 +4,6 @@ from mock import patch, Mock
 from pluct import resource, schema
 
 
-
 class NewResourceTestCase(TestCase):
     @patch("pluct.schema.get")
     @patch("requests.get")
@@ -36,8 +35,10 @@ class NewResourceTestCase(TestCase):
         get.return_value = mock
 
         self.url = "http://app.com/content"
-        self.result = resource.get(url=self.url)
+        auth = {"type": "t", "credentials": "c"}
+        self.result = resource.get(url=self.url, auth=auth)
         self.result.data
+        schema_get.assert_called_with("url.com", auth)
 
     def test_get_should_returns_a_resource(self):
         self.assertIsInstance(self.result, resource.NewResource)

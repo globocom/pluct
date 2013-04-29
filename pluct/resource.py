@@ -15,11 +15,11 @@ def add_methods(resource, s, auth=None):
         setattr(resource, rel, method_class.process)
 
 
-def schema_from_header(headers):
+def schema_from_header(headers, auth=None):
     p = re.compile(".*profile=([^;]+);?")
     schema_url = p.findall(headers.get('content-type', ''))
     if schema_url:
-        return schema.get(schema_url[0])
+        return schema.get(schema_url[0], auth)
     return None
 
 
@@ -33,7 +33,7 @@ class NewResource(object):
     def data(self):
         if not self._data:
             response = Request('GET', self.url, self.auth).process()
-            s = schema_from_header(response.headers)
+            s = schema_from_header(response.headers, self.auth)
             if s:
                 self.schema = s
                 add_methods(self, s)
@@ -43,7 +43,8 @@ class NewResource(object):
 
 def get(url, auth=None):
     return NewResource(
-        url=url
+        url=url,
+        auth=auth
     )
 
 
