@@ -3,6 +3,7 @@ import json
 import re
 
 from uritemplate import expand
+from jsonschema import validate, SchemaError
 
 from pluct.request import Request
 from pluct import schema
@@ -34,6 +35,13 @@ class NewResource(object):
         self.schema = schema
         if self.schema:
             add_methods(self, self.schema)
+
+    def is_valid(self):
+        try:
+            validate(self.data, self.schema.__dict__)
+        except SchemaError:
+            return False
+        return True
 
 
 def get(url, auth=None):

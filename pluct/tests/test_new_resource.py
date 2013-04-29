@@ -13,6 +13,7 @@ class NewResourceTestCase(TestCase):
         }
         self.schema = schema.Schema(
             url="url.com",
+            required="platform",
             links=[
                 {
                     "href": "/apps/{name}/log",
@@ -55,3 +56,6 @@ class NewResourceTestCase(TestCase):
         self.result.log()
         get.assert_called_with(url='/apps/repos/log',
                                headers={'content-type': 'application/json'})
+
+    def test_is_valid(self):
+        self.assertFalse(self.result.is_valid())
