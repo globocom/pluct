@@ -2,6 +2,8 @@
 import json
 import re
 
+from uritemplate import expand
+
 from pluct.request import Request
 from pluct import schema
 
@@ -11,6 +13,7 @@ def add_methods(resource, s, auth=None):
         method = link.get("method", "GET")
         href = link.get("href")
         rel = link.get("rel")
+        href = expand(href, resource.data)
         method_class = Request(method, href, auth)
         setattr(resource, rel, method_class.process)
 

@@ -48,6 +48,10 @@ class NewResourceTestCase(TestCase):
     def test_schema(self):
         self.assertEqual(self.schema.url, self.result.schema.url)
 
-    def test_methods(self):
+    @patch("requests.get")
+    def test_methods(self, get):
         self.assertTrue(hasattr(self.result, "log"))
         self.assertTrue(hasattr(self.result, "env"))
+        self.result.log()
+        get.assert_called_with(url='/apps/repos/log',
+                               headers={'content-type': 'application/json'})
