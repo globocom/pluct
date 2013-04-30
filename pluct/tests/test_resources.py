@@ -122,7 +122,7 @@ class ResourceListTestCase(unittest.TestCase):
             ]
         }
 
-        self.patch_schema = mock.patch('pluct.service.Resource._get_schema')
+        self.patch_schema = mock.patch('pluct.resource.Resource._get_schema')
         self.schema_mock = self.patch_schema.start()
         self.schema_mock.return_value = self.fake_schema
 
