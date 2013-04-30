@@ -35,7 +35,7 @@ setup(
     author_email='marcospetry@gmail.com',
     url='git@github.com:globocom/pluct.git',
     classifiers=[
-        'Develop    ment Status :: 3 - Alpha',
+        'Development Status :: 3 - Alpha',
         'Environment :: No Input/Output (Daemon)',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
