@@ -1,5 +1,6 @@
 from unittest import TestCase
 from mock import patch, Mock
+from urlparse import urlparse, parse_qs
 
 from pluct import resource, schema
 
@@ -109,3 +110,37 @@ class ResourceTestCase(TestCase):
         get.return_value = mock
         result = resource.get(url="appurl.com", auth=None)
         self.assertTrue(result.is_valid())
+
+    @patch("requests.get")
+    def test_method_with_custom_schema(self, get):
+        s = schema.Schema(
+            title="title",
+            url="url.com",
+            properties={
+                u'name': {u'type': u'string'},
+            },
+            links=[{
+                "href": "http://54.243.182.138:8080/apps/{name}/log",
+                "method": "GET",
+                "rel": "log",
+                "schema": {
+                    "required": ["lines"],
+                    "properties": {
+                        "lines": {"type": "number"},
+                        "source": {"type": "string"},
+                    }
+                }
+            }]
+        )
+        data = {
+            u'name': u'repos',
+        }
+        app = resource.Resource(url="appurl.com", data=data, schema=s)
+        app.log(lines=10)
+        url = 'http://54.243.182.138:8080/apps/repos/log?lines=10'
+        get.assert_called_with(url=url,
+                               headers={'content-type': 'application/json'})
+        app.log(lines=10, source="app")
+        qs = parse_qs(urlparse(get.call_args[1]['url']).query)
+        expected = {'source': ['app'], 'lines': ['10']}
+        self.assertDictEqual(expected, qs)

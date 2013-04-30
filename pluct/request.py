@@ -1,5 +1,6 @@
 import json
 import requests
+import urllib
 
 
 class Request(object):
@@ -10,7 +11,11 @@ class Request(object):
         self.auth = auth
 
     def _get(self, **kwargs):
-        return requests.get(url=self.href, headers=self.get_headers())
+        querystring = urllib.urlencode(kwargs)
+        url = self.href
+        if querystring:
+            url += "?{0}".format(querystring)
+        return requests.get(url=url, headers=self.get_headers())
 
     def _post(self, **kwargs):
         data = kwargs.pop('data')
