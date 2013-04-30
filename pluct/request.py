@@ -40,11 +40,6 @@ class Request(object):
 
         return header
 
-    @classmethod
-    def check_valid_response(cls, response):
-        return (response.status_code == 200 and
-                'application/json' in response.headers['content-type'])
-
     @property
     def process(self):
         request_type_by_method = {
