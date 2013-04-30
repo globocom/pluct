@@ -47,5 +47,4 @@ setup(
     package_data=core_package_data,
     include_package_data=True,
     install_requires=parse_requirements('requirements.txt'),
-    tests_require=parse_requirements('requirements_test.txt'),
 )
