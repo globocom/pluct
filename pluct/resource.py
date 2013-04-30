@@ -26,7 +26,7 @@ def schema_from_header(headers, auth=None):
     return None
 
 
-class NewResource(object):
+class Resource(object):
     def __init__(self, url, data=None, schema=None, auth=None):
         self.auth = auth
         self.url = url
@@ -46,7 +46,7 @@ class NewResource(object):
 def get(url, auth=None):
     response = Request('GET', url, auth).process()
     s = schema_from_header(response.headers, auth)
-    return NewResource(
+    return Resource(
         url=url,
         auth=auth,
         data=response.json(),
