@@ -16,8 +16,8 @@ app.is_valid()
 retrieve the resource data:
 ```python
 app.data
-`
-``
+```
+
 retrieve the resource schema:
 ```python
 app.schema
@@ -26,6 +26,6 @@ app.schema
 Limitations
 -----------
 
-*pluct* is an experimental project. has its limitations:
+*pluct* is an experimental project. its limitations:
 
-    * partial support for draft 4.
+* partial support for draft 4.
