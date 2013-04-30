@@ -1,36 +1,31 @@
-api-manager-client
-==================
+pluct
+=====
 
 [![Build Status](https://drone.io/github.com/globocom/pluct/status.png)](https://drone.io/github.com/globocom/pluct/latest)
 
-
 ```python
-from pluct import Service
-my_service = Service('http://yourapi.com/v1/')
+from pluct import resource
+app = resource.get("http://myapi.com/app/myapp")
 ```
 
-retrieve all items os your resource:
+verifying if the resource is valid:
 ```python
-my_service.cities.all()
+app.is_valid()
 ```
 
-add new item:
-
+retrieve the resource data:
 ```python
-my_service.cities.create('name': 'Fortaleza'})
+app.data
+`
+``
+retrieve the resource schema:
+```python
+app.schema
 ```
 
-delete
-```python
-ss.cities.delete('RESOURCE_ID_OF_AN_ITEM')
-```
+Limitations
+-----------
 
-Edit
-```python
-ss.cities.edit('RESOURCE_ID_OF_AN_ITEM', {'name': 'Porto Alegre'})
-```
+*pluct* is an experimental project. has its limitations:
 
-Replace
-```python
-ss.cities.replace('RESOURCE_ID_OF_AN_ITEM', {'name': 'Porto Alegre'})
-```
+    * partial support for draft 4.
