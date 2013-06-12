@@ -6,6 +6,7 @@ from pluct import resource, schema
 
 
 class ResourceTestCase(TestCase):
+
     @patch("pluct.schema.get")
     @patch("requests.get")
     def setUp(self, get, schema_get):
@@ -14,6 +15,7 @@ class ResourceTestCase(TestCase):
         }
         self.schema = schema.Schema(
             url="url.com",
+            type="object",
             required="platform",
             links=[
                 {
@@ -37,9 +39,9 @@ class ResourceTestCase(TestCase):
         get.return_value = mock
 
         self.url = "http://app.com/content"
-        auth = {"type": "t", "credentials": "c"}
-        self.result = resource.get(url=self.url, auth=auth)
-        schema_get.assert_called_with("url.com", auth)
+        self.auth = {"type": "t", "credentials": "c"}
+        self.result = resource.get(url=self.url, auth=self.auth)
+        schema_get.assert_called_with("url.com", self.auth)
 
     def test_get_should_returns_a_resource(self):
         self.assertIsInstance(self.result, resource.Resource)
@@ -67,6 +69,7 @@ class ResourceTestCase(TestCase):
     def test_is_valid_invalid(self, get, from_header):
         s = schema.Schema(
             title="title",
+            type="object",
             url="url.com",
             required=['platform', 'name'],
             properties={
@@ -92,6 +95,7 @@ class ResourceTestCase(TestCase):
         s = schema.Schema(
             title="title",
             url="url.com",
+            type="object",
             required=['platform', 'name'],
             properties={
                 u'ip': {u'type': u'string'},
@@ -143,4 +147,42 @@ class ResourceTestCase(TestCase):
         app.log(lines=10, source="app")
         qs = parse_qs(urlparse(get.call_args[1]['url']).query)
         expected = {'source': ['app'], 'lines': ['10']}
-        self.assertDictEqual(expected, qs)
+        self.assertEqual(qs, expected)
+
+    @patch("requests.get")
+    def test_schema_with_property_type_array(self, get):
+        s = schema.Schema(
+            title="title",
+            type="object",
+            url="url.com",
+            properties={
+                u'items': {
+                    u'type': u'array',
+                    u'items': {
+                        'title': 'Foo',
+                        'type': 'object',
+                        'properties': {
+                            'id': {
+                                'type': 'integer'
+                            }
+                        },
+                        'links': [{
+                            "href": "http://54.243.182.138:8080/foos/{id}/",
+                            "method": "GET",
+                            "rel": "item",
+                        }]
+                    }
+                },
+            },
+        )
+        data = {
+            'items': [
+                {'id': 1},
+                {'id': 2}
+            ]
+        }
+        app = resource.Resource(url="appurl.com", data=data, schema=s)
+        app.data['items'][0].item()
+        url = 'http://54.243.182.138:8080/foos/1/'
+        get.assert_called_with(url=url,
+                               headers={'content-type': 'application/json'})

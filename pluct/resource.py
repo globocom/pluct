@@ -5,6 +5,7 @@ from uritemplate import expand
 from jsonschema import validate, SchemaError, ValidationError
 
 from pluct.request import Request
+from pluct.schema import Schema
 from pluct import schema
 
 
@@ -27,6 +28,7 @@ def schema_from_header(headers, auth=None):
 
 
 class Resource(object):
+
     def __init__(self, url, data=None, schema=None, auth=None):
         self.auth = auth
         self.url = url
@@ -35,12 +37,45 @@ class Resource(object):
         if self.schema:
             add_methods(self, self.schema, self.auth)
 
+        self.parse_data()
+
+    def __repr__(self):
+        return str(self.data)
+
+    def __iter__(self):
+        return iter(self.data)
+
+    def __getitem__(self, attr):
+        if attr in self.data:
+            return self.data[attr]
+        raise KeyError
+
     def is_valid(self):
         try:
             validate(self.data, self.schema.__dict__)
         except (SchemaError, ValidationError):
             return False
         return True
+
+    def parse_data(self):
+        if isinstance(self.data, dict):
+            for key, value in self.data.items():
+                if isinstance(value, list):
+                    data_items = []
+                    for item in value:
+                        prop_items = self.schema.properties[key]['items']
+                        if "$ref" in prop_items:
+                            s = schema.get(prop_items['$ref'], self.auth)
+                        else:
+                            s = Schema(self.url, **prop_items)
+                        data_items.append(
+                            Resource(
+                                self.url,
+                                data=item,
+                                schema=s,
+                            )
+                        )
+                    self.data[key] = data_items
 
 
 def get(url, auth=None):
