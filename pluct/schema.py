@@ -2,9 +2,10 @@ from pluct.request import Request
 
 
 class Schema(object):
-    def __init__(self, url, title=None, required=None,
+    def __init__(self, url, type=None, title=None, required=None,
                  properties=None, links=None):
         self.url = url
+        self.type = type
         self.required = required
         self.title = title
         self.properties = properties
@@ -15,6 +16,7 @@ def get(url, auth=None):
     data = Request("GET", url, auth).process().json()
     return Schema(
         url=url,
+        type=data.get("type"),
         required=data.get("required"),
         title=data.get("title"),
         properties=data.get("properties"),
