@@ -52,3 +52,15 @@ class SchemaTestCase(TestCase):
 
     def test_schema_url(self):
         self.assertEqual(self.url, self.result.url)
+
+    def test_links_should_not_be_setted_by_default(self):
+        s = schema.Schema(url="")
+        self.assertFalse(hasattr(s, "links"))
+
+    def test_properties_should_not_be_setted_by_default(self):
+        s = schema.Schema(url="")
+        self.assertFalse(hasattr(s, "properties"))
+
+    def test_required_should_not_be_setted_by_default(self):
+        s = schema.Schema(url="")
+        self.assertFalse(hasattr(s, "required"))

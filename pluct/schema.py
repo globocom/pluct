@@ -6,10 +6,13 @@ class Schema(object):
                  properties=None, links=None):
         self.url = url
         self.type = type
-        self.required = required
+        if required:
+            self.required = required
         self.title = title
-        self.properties = properties
-        self.links = links
+        if properties:
+            self.properties = properties
+        if links:
+            self.links = links
 
 
 def get(url, auth=None):
