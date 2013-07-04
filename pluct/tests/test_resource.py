@@ -12,11 +12,17 @@ class ResourceTestCase(TestCase):
     def setUp(self, get, schema_get):
         self.data = {
             "name": "repos",
+            "platform": "js",
         }
         self.schema = schema.Schema(
             url="url.com",
             type="object",
-            required="platform",
+            required=["platform"],
+            title="some title",
+            properties={
+                u'name': {u'type': u'string'},
+                u'platform': {u'type': u'string'}
+            },
             links=[
                 {
                     "href": "/apps/{name}/log",
@@ -62,7 +68,10 @@ class ResourceTestCase(TestCase):
                                         'Authorization': 't c'})
 
     def test_is_valid_schema_error(self):
+        old = self.result.schema.required
+        self.result.schema.required = "ble"
         self.assertFalse(self.result.is_valid())
+        self.result.schema.required = old
 
     @patch("pluct.resource.schema_from_header")
     @patch("requests.get")
@@ -118,6 +127,7 @@ class ResourceTestCase(TestCase):
     @patch("requests.get")
     def test_method_with_custom_schema(self, get):
         s = schema.Schema(
+            type="object",
             title="title",
             url="url.com",
             properties={

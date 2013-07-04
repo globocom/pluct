@@ -10,7 +10,7 @@ from pluct import schema
 
 
 def add_methods(resource, s, auth=None):
-    for link in s.links or []:
+    for link in getattr(s, "links", []) or []:
         method = link.get("method", "GET")
         href = link.get("href")
         rel = link.get("rel")
@@ -34,10 +34,10 @@ class Resource(object):
         self.url = url
         self.data = data
         self.schema = schema
-        if self.schema:
-            add_methods(self, self.schema, self.auth)
-
-        self.parse_data()
+        if self.is_valid():
+            if self.schema:
+                add_methods(self, self.schema, self.auth)
+            self.parse_data()
 
     def __repr__(self):
         return str(self.data)
