@@ -4,3 +4,4 @@ build/
 pluct.egg-info/
 *.sw[a-z]
 .coverage
+dist/
