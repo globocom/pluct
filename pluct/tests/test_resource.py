@@ -1,4 +1,4 @@
-from unittest import TestCase
+from unittest import TestCase, skip
 from mock import patch, Mock
 from urlparse import urlparse, parse_qs
 
@@ -89,39 +89,43 @@ class ResourceTestCase(TestCase):
         self.assertTrue(self.result.is_valid())
 
     @patch("requests.get")
-    def test_method_with_custom_schema(self, get):
-        s = schema.Schema(
-            type="object",
-            title="title",
-            url="url.com",
-            properties={
-                u'name': {u'type': u'string'},
-            },
-            links=[{
-                "href": "http://54.243.182.138:8080/apps/{name}/log",
-                "method": "GET",
-                "rel": "log",
-                "schema": {
-                    "required": ["lines"],
-                    "properties": {
-                        "lines": {"type": "number"},
-                        "source": {"type": "string"},
-                    }
-                }
-            }]
-        )
+    def test_extra_parameters_querystring(self, get):
         data = {
             u'name': u'repos',
+            u'platform': u'repos',
         }
-        app = resource.Resource(url="appurl.com", data=data, schema=s)
+        app = resource.Resource(url="appurl.com", data=data,
+                                schema=self.schema)
+
         app.log(lines=10)
-        url = 'http://54.243.182.138:8080/apps/repos/log?lines=10'
-        get.assert_called_with(url=url,
-                               headers={'content-type': 'application/json'})
+        url = '/apps/repos/log?lines=10'
+        get.assert_called_with(
+            url=url,
+            headers={'content-type': 'application/json'}
+        )
+
         app.log(lines=10, source="app")
         qs = parse_qs(urlparse(get.call_args[1]['url']).query)
         expected = {'source': ['app'], 'lines': ['10']}
         self.assertEqual(qs, expected)
+
+    @patch("requests.get")
+    @skip("its need refactor the request and resource")
+    def test_extra_parameters_uri(self, get):
+        data = {
+            u'name': u'repos',
+            u'platform': u'repos',
+        }
+        self.schema.links[0]['href'] = '/apps/{name}/log/{lines}'
+        app = resource.Resource(url="appurl.com", data=data,
+                                schema=self.schema)
+
+        app.log(lines=10, source="app")
+        url = '/apps/repos/log/10?source=app'
+        get.assert_called_with(
+            url=url,
+            headers={'content-type': 'application/json'}
+        )
 
     @patch("requests.get")
     def test_schema_with_property_type_array(self, get):
@@ -141,7 +145,7 @@ class ResourceTestCase(TestCase):
                             }
                         },
                         'links': [{
-                            "href": "http://54.243.182.138:8080/foos/{id}/",
+                            "href": "http://localhost/foos/{id}/",
                             "method": "GET",
                             "rel": "item",
                         }]
@@ -157,6 +161,6 @@ class ResourceTestCase(TestCase):
         }
         app = resource.Resource(url="appurl.com", data=data, schema=s)
         app.data['items'][0].item()
-        url = 'http://54.243.182.138:8080/foos/1/'
+        url = 'http://localhost/foos/1/'
         get.assert_called_with(url=url,
                                headers={'content-type': 'application/json'})
