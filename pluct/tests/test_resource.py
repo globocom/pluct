@@ -43,7 +43,6 @@ class ResourceTestCase(TestCase):
         mock = Mock(headers=self.headers)
         mock.json.return_value = self.data
         get.return_value = mock
-
         self.url = "http://app.com/content"
         self.auth = {"type": "t", "credentials": "c"}
         self.result = resource.get(url=self.url, auth=self.auth)
@@ -76,21 +75,9 @@ class ResourceTestCase(TestCase):
     @patch("pluct.resource.schema_from_header")
     @patch("requests.get")
     def test_is_valid_invalid(self, get, from_header):
-        s = schema.Schema(
-            title="title",
-            type="object",
-            url="url.com",
-            required=['platform', 'name'],
-            properties={
-                u'ip': {u'type': u'string'},
-                u'cname': {u'type': u'string'},
-                u'name': {u'type': u'string'},
-                u'platform': {u'type': u'string'}
-            }
-        )
-        from_header.return_value = s
+        from_header.return_value = self.schema
         data = {
-            u'name': u'repos',
+            u'doestnotexists': u'repos',
         }
         mock = Mock(headers={})
         mock.json.return_value = data
