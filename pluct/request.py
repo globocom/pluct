@@ -14,28 +14,37 @@ class Request(object):
         self.resource = resource
 
     def _get(self, **kwargs):
+        data = self.resource.data
+        data.update(kwargs)
+        url = expand(self.href, data)
+        for var in kwargs.keys():
+            if var in self.href:
+                kwargs.pop(var)
         querystring = urllib.urlencode(kwargs)
-        url = self.href
         if querystring:
             url += "?{0}".format(querystring)
         return requests.get(url=url, headers=self.get_headers())
 
     def _post(self, **kwargs):
+        self.href = expand(self.href, self.resource.data)
         data = kwargs.pop('data')
         return requests.post(url=self.href, data=json.dumps(data),
                              headers=self.get_headers())
 
     def _patch(self, **kwargs):
+        self.href = expand(self.href, self.resource.data)
         data = kwargs.pop('data')
         return requests.patch(url=self.href, data=json.dumps(data),
                               headers=self.get_headers())
 
     def _put(self, **kwargs):
+        self.href = expand(self.href, self.resource.data)
         data = kwargs.pop('data')
         return requests.put(url=self.href, data=json.dumps(data),
                             headers=self.get_headers())
 
     def _delete(self, **kwargs):
+        self.href = expand(self.href, self.resource.data)
         return requests.delete(url=self.href, headers=self.get_headers())
 
     def get_headers(self):
@@ -50,7 +59,6 @@ class Request(object):
 
     @property
     def process(self):
-        self.href = expand(self.href, self.resource.data)
         request_type_by_method = {
             'GET': self._get,
             'POST': self._post,

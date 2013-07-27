@@ -1,4 +1,4 @@
-from unittest import TestCase, skip
+from unittest import TestCase
 from mock import patch, Mock
 from urlparse import urlparse, parse_qs
 
@@ -110,7 +110,6 @@ class ResourceTestCase(TestCase):
         self.assertEqual(qs, expected)
 
     @patch("requests.get")
-    @skip("its need refactor the request and resource")
     def test_extra_parameters_uri(self, get):
         data = {
             u'name': u'repos',
