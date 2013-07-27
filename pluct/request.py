@@ -2,6 +2,8 @@ import json
 import requests
 import urllib
 
+from uritemplate import expand
+
 
 class Request(object):
 
@@ -9,6 +11,7 @@ class Request(object):
         self.method = method
         self.href = href
         self.auth = auth
+        self.resource = resource
 
     def _get(self, **kwargs):
         querystring = urllib.urlencode(kwargs)
@@ -47,6 +50,7 @@ class Request(object):
 
     @property
     def process(self):
+        self.href = expand(self.href, self.resource.data)
         request_type_by_method = {
             'GET': self._get,
             'POST': self._post,

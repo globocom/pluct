@@ -2,7 +2,6 @@
 import re
 import requests
 
-from uritemplate import expand
 from jsonschema import validate, SchemaError, ValidationError
 
 from pluct.request import Request
@@ -15,7 +14,7 @@ def add_methods(resource, s, auth=None):
         method = link.get("method", "GET")
         href = link.get("href")
         rel = link.get("rel")
-        href = expand(href, resource.data)
+        # href = expand(href, resource.data)
         method_class = Request(method, href, auth, resource)
         setattr(resource, rel, method_class.process)
 
