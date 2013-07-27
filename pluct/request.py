@@ -5,7 +5,7 @@ import urllib
 
 class Request(object):
 
-    def __init__(self, method, href, auth):
+    def __init__(self, method, href, auth, resource):
         self.method = method
         self.href = href
         self.auth = auth

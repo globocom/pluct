@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import re
+import requests
 
 from uritemplate import expand
 from jsonschema import validate, SchemaError, ValidationError
@@ -15,7 +16,7 @@ def add_methods(resource, s, auth=None):
         href = link.get("href")
         rel = link.get("rel")
         href = expand(href, resource.data)
-        method_class = Request(method, href, auth)
+        method_class = Request(method, href, auth, resource)
         setattr(resource, rel, method_class.process)
 
 
@@ -79,7 +80,14 @@ class Resource(object):
 
 
 def get(url, auth=None):
-    response = Request('GET', url, auth).process()
+    headers = {
+        'content-type': 'application/json'
+    }
+    if auth:
+        headers['Authorization'] = '{0} {1}'.format(
+            auth['type'], auth['credentials']
+        )
+    response = requests.get(url, headers=headers)
     s = schema_from_header(response.headers, auth)
     return Resource(
         url=url,

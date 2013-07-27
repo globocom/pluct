@@ -1,4 +1,4 @@
-from pluct.request import Request
+import requests
 
 
 class Schema(object):
@@ -16,7 +16,14 @@ class Schema(object):
 
 
 def get(url, auth=None):
-    data = Request("GET", url, auth).process().json()
+    headers = {
+        'content-type': 'application/json'
+    }
+    if auth:
+        headers['Authorization'] = '{0} {1}'.format(
+            auth['type'], auth['credentials']
+        )
+    data = requests.get(url, headers=headers).json()
     return Schema(
         url=url,
         type=data.get("type"),
