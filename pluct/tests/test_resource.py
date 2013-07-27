@@ -85,31 +85,8 @@ class ResourceTestCase(TestCase):
         result = resource.get(url="appurl.com", auth=None)
         self.assertFalse(result.is_valid())
 
-    @patch("pluct.resource.schema_from_header")
-    @patch("requests.get")
-    def test_is_valid(self, get, from_header):
-        s = schema.Schema(
-            title="title",
-            url="url.com",
-            type="object",
-            required=['platform', 'name'],
-            properties={
-                u'ip': {u'type': u'string'},
-                u'cname': {u'type': u'string'},
-                u'name': {u'type': u'string'},
-                u'platform': {u'type': u'string'}
-            }
-        )
-        from_header.return_value = s
-        data = {
-            u'name': u'repos',
-            u'platform': u'python',
-        }
-        mock = Mock(headers={})
-        mock.json.return_value = data
-        get.return_value = mock
-        result = resource.get(url="appurl.com", auth=None)
-        self.assertTrue(result.is_valid())
+    def test_is_valid(self):
+        self.assertTrue(self.result.is_valid())
 
     @patch("requests.get")
     def test_method_with_custom_schema(self, get):
