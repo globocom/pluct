@@ -127,6 +127,26 @@ class ResourceTestCase(TestCase):
         )
 
     @patch("requests.get")
+    def test_extra_parameters_uri_name_bug(self, get):
+        # regression for #12.
+        data = {'platform': 'xpto'}
+        link = {
+            "href": "http://example.org/{param}",
+            "method": "GET",
+            "rel": "example"
+        }
+        self.schema.links.append(link)
+        app = resource.Resource(url="appurl.com", data=data,
+                                schema=self.schema)
+
+        app.example(param='path', name='value1')
+        url = 'http://example.org/path?name=value1'
+        get.assert_called_with(
+            url=url,
+            headers={'content-type': 'application/json'}
+        )
+
+    @patch("requests.get")
     def test_schema_with_property_type_array(self, get):
         s = schema.Schema(
             title="title",
