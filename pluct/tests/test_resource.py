@@ -131,7 +131,7 @@ class ResourceTestCase(TestCase):
         # regression for #12.
         data = {'platform': 'xpto'}
         link = {
-            "href": "http://example.org/{param}",
+            "href": "http://example.org/{context_name}",
             "method": "GET",
             "rel": "example"
         }
@@ -139,8 +139,8 @@ class ResourceTestCase(TestCase):
         app = resource.Resource(url="appurl.com", data=data,
                                 schema=self.schema)
 
-        app.example(param='path', name='value1')
-        url = 'http://example.org/path?name=value1'
+        app.example(context_name='context', name='value1')
+        url = 'http://example.org/context?name=value1'
         get.assert_called_with(
             url=url,
             headers={'content-type': 'application/json'}

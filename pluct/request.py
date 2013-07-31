@@ -18,7 +18,7 @@ class Request(object):
         data.update(kwargs)
         url = expand(self.href, data)
         for var in kwargs.keys():
-            if var in self.href:
+            if "{{{}}}".format(var) in self.href:
                 kwargs.pop(var)
         querystring = urllib.urlencode(kwargs)
         if querystring:
