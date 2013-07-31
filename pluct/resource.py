@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
-import re
+
+
 import requests
 
 from jsonschema import validate, SchemaError, ValidationError
 
+from pluct import schema
 from pluct.request import Request
 from pluct.schema import Schema
-from pluct import schema
 
 
 def add_methods(resource, s, auth=None):
@@ -16,14 +17,6 @@ def add_methods(resource, s, auth=None):
         rel = link.get("rel")
         method_class = Request(method, href, auth, resource)
         setattr(resource, rel, method_class.process)
-
-
-def schema_from_header(headers, auth=None):
-    p = re.compile(".*profile=([^;]+);?")
-    schema_url = p.findall(headers.get('content-type', ''))
-    if schema_url:
-        return schema.get(schema_url[0], auth)
-    return None
 
 
 class Resource(object):
@@ -86,7 +79,7 @@ def get(url, auth=None):
             auth['type'], auth['credentials']
         )
     response = requests.get(url, headers=headers)
-    s = schema_from_header(response.headers, auth)
+    s = schema.from_header(response.headers, auth)
     return Resource(
         url=url,
         auth=auth,

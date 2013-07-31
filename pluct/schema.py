@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+
+
+import re
+
 import requests
 
 
@@ -32,3 +37,11 @@ def get(url, auth=None):
         properties=data.get("properties"),
         links=data.get("links")
     )
+
+
+def from_header(headers, auth=None):
+    p = re.compile(".*profile=([^;]+);?")
+    schema_url = p.findall(headers.get('content-type', ''))
+    if schema_url:
+        return get(schema_url[0], auth)
+    return None

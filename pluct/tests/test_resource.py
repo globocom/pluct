@@ -72,7 +72,7 @@ class ResourceTestCase(TestCase):
         self.assertFalse(self.result.is_valid())
         self.result.schema.required = old
 
-    @patch("pluct.resource.schema_from_header")
+    @patch("pluct.schema.from_header")
     @patch("requests.get")
     def test_is_valid_invalid(self, get, from_header):
         from_header.return_value = self.schema
