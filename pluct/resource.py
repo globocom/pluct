@@ -79,13 +79,7 @@ def get(url, auth=None):
             auth['type'], auth['credentials']
         )
     response = requests.get(url, headers=headers)
-    s = schema.from_header(response.headers, auth)
-    return Resource(
-        url=url,
-        auth=auth,
-        data=response.json(),
-        schema=s
-    )
+    return from_response(response, auth)
 
 
 def from_response(response, auth=None):
