@@ -91,6 +91,7 @@ def get(url, auth=None):
 def from_response(response, auth=None):
     return Resource(
         url=response.url,
+        auth=auth,
         data=response.json(),
         schema=schema.from_header(response.headers, auth)
     )

@@ -200,16 +200,16 @@ class FromResponseTestCase(TestCase):
         self._response.headers = {
             'content-type': content_type
         }
+        self._auth = {'type': 't', 'credentials': 'c'}
 
     @patch('pluct.schema.from_header')
     def test_should_return_resource_from_response(self, from_header):
-        returned_resource = resource.from_response(self._response)
-
+        returned_resource = resource.from_response(self._response, self._auth)
         self.assertEqual(returned_resource.url, 'http://example.com')
+        self.assertEqual(returned_resource.auth, self._auth)
         self.assertEqual(returned_resource.data, {})
 
     @patch('pluct.schema.from_header')
     def test_should_obtain_schema_from_header(self, from_header):
-        auth = {'type': 't', 'credentials': 'c'}
-        resource.from_response(self._response, auth)
-        from_header.assert_called_with(self._response.headers, auth)
+        resource.from_response(self._response, self._auth)
+        from_header.assert_called_with(self._response.headers, self._auth)
