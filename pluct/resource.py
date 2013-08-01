@@ -91,6 +91,6 @@ def get(url, auth=None):
 def from_response(response):
     return Resource(
         url=response.url,
-        data={},
+        data=response.json(),
         schema=Schema('http://example.org/schema')
     )

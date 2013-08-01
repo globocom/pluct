@@ -195,7 +195,9 @@ class FromResponseTestCase(TestCase):
     def test_should_return_resource_from_response(self):
         response = Response()
         response.url = 'http://example.com'
+        response.json = Mock(return_value={})
 
         returned_resource = resource.from_response(response)
 
         self.assertEqual(returned_resource.url, 'http://example.com')
+        self.assertEqual(returned_resource.data, {})
