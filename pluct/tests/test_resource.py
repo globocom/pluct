@@ -192,12 +192,24 @@ class ResourceTestCase(TestCase):
 
 class FromResponseTestCase(TestCase):
 
-    def test_should_return_resource_from_response(self):
-        response = Response()
-        response.url = 'http://example.com'
-        response.json = Mock(return_value={})
+    def setUp(self):
+        self._response = Response()
+        self._response.url = 'http://example.com'
+        self._response.json = Mock(return_value={})
+        content_type = 'application/json; profile=http://example.com/schema'
+        self._response.headers = {
+            'content-type': content_type
+        }
 
-        returned_resource = resource.from_response(response)
+    @patch('pluct.schema.from_header')
+    def test_should_return_resource_from_response(self, from_header):
+        returned_resource = resource.from_response(self._response)
 
         self.assertEqual(returned_resource.url, 'http://example.com')
         self.assertEqual(returned_resource.data, {})
+
+    @patch('pluct.schema.from_header')
+    def test_should_obtain_schema_from_header(self, from_header):
+        auth = {'type': 't', 'credentials': 'c'}
+        resource.from_response(self._response, auth)
+        from_header.assert_called_with(self._response.headers, auth)
