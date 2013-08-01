@@ -86,3 +86,11 @@ def get(url, auth=None):
         data=response.json(),
         schema=s
     )
+
+
+def from_response(response):
+    return Resource(
+        url=response.url,
+        data={},
+        schema=Schema('http://example.org/schema')
+    )

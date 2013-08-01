@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+
+
+from requests import Response
+
 from unittest import TestCase
 from mock import patch, Mock
 from urlparse import urlparse, parse_qs
@@ -183,3 +188,14 @@ class ResourceTestCase(TestCase):
         url = 'http://localhost/foos/1/'
         get.assert_called_with(url=url,
                                headers={'content-type': 'application/json'})
+
+
+class FromResponseTestCase(TestCase):
+
+    def test_should_return_resource_from_response(self):
+        response = Response()
+        response.url = 'http://example.com'
+
+        returned_resource = resource.from_response(response)
+
+        self.assertEqual(returned_resource.url, 'http://example.com')
