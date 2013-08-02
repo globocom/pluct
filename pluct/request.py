@@ -14,6 +14,8 @@ class Request(object):
         self.resource = resource
 
     def _get(self, **kwargs):
+        from pluct import resource
+
         data = self.resource.data
         data.update(kwargs)
         url = expand(self.href, data)
@@ -23,7 +25,7 @@ class Request(object):
         querystring = urllib.urlencode(kwargs)
         if querystring:
             url += "?{0}".format(querystring)
-        return requests.get(url=url, headers=self.get_headers())
+        return resource.from_response(requests.get(url=url, headers=self.get_headers()))
 
     def _post(self, **kwargs):
         self.href = expand(self.href, self.resource.data)
