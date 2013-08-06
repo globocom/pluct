@@ -62,8 +62,9 @@ class ResourceTestCase(TestCase):
     def test_schema(self):
         self.assertEqual(self.schema.url, self.result.schema.url)
 
+    @patch('pluct.resource.from_response')
     @patch("requests.get")
-    def test_methods(self, get):
+    def test_methods(self, get, resource_from_response):
         self.assertTrue(hasattr(self.result, "log"))
         self.assertTrue(hasattr(self.result, "env"))
         self.result.log()
@@ -93,8 +94,9 @@ class ResourceTestCase(TestCase):
     def test_is_valid(self):
         self.assertTrue(self.result.is_valid())
 
+    @patch('pluct.resource.from_response')
     @patch("requests.get")
-    def test_extra_parameters_querystring(self, get):
+    def test_extra_parameters_querystring(self, get, resource_from_response):
         data = {
             u'name': u'repos',
             u'platform': u'repos',
@@ -114,8 +116,9 @@ class ResourceTestCase(TestCase):
         expected = {'source': ['app'], 'lines': ['10']}
         self.assertEqual(qs, expected)
 
+    @patch('pluct.resource.from_response')
     @patch("requests.get")
-    def test_extra_parameters_uri(self, get):
+    def test_extra_parameters_uri(self, get, resource_from_response):
         data = {
             u'name': u'repos',
             u'platform': u'repos',
@@ -131,8 +134,9 @@ class ResourceTestCase(TestCase):
             headers={'content-type': 'application/json'}
         )
 
+    @patch('pluct.resource.from_response')
     @patch("requests.get")
-    def test_extra_parameters_uri_name_bug(self, get):
+    def test_extra_parameters_uri_name_bug(self, get, resource_from_response):
         # regression for #12.
         data = {'platform': 'xpto'}
         link = {
@@ -151,8 +155,9 @@ class ResourceTestCase(TestCase):
             headers={'content-type': 'application/json'}
         )
 
+    @patch('pluct.resource.from_response')
     @patch("requests.get")
-    def test_schema_with_property_type_array(self, get):
+    def test_schema_with_property_type_array(self, get, from_response):
         s = schema.Schema(
             title="title",
             type="object",
