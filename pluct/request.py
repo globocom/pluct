@@ -40,20 +40,32 @@ class Request(object):
         return resource.from_response(response)
 
     def _patch(self, **kwargs):
+        # TODO: Refactor to resolve circular dependency.
+        from pluct import resource
+
         self.href = expand(self.href, self.resource.data)
         data = kwargs.pop('data')
-        return requests.patch(url=self.href, data=json.dumps(data),
-                              headers=self.get_headers())
+        response = requests.patch(url=self.href, data=json.dumps(data),
+                                  headers=self.get_headers())
+        return resource.from_response(response)
 
     def _put(self, **kwargs):
+        # TODO: Refactor to resolve circular dependency.
+        from pluct import resource
+
         self.href = expand(self.href, self.resource.data)
         data = kwargs.pop('data')
-        return requests.put(url=self.href, data=json.dumps(data),
-                            headers=self.get_headers())
+        response = requests.put(url=self.href, data=json.dumps(data),
+                                headers=self.get_headers())
+        return resource.from_response(response)
 
     def _delete(self, **kwargs):
+        # TODO: Refactor to resolve circular dependency.
+        from pluct import resource
+
         self.href = expand(self.href, self.resource.data)
-        return requests.delete(url=self.href, headers=self.get_headers())
+        response = requests.delete(url=self.href, headers=self.get_headers())
+        return resource.from_response(response)
 
     def get_headers(self):
         header = {
