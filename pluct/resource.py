@@ -26,10 +26,10 @@ class Resource(object):
         self.url = url
         self.data = data
         self.schema = schema
-        if self.is_valid():
-            if self.schema:
+        if self.schema:
+            if self.is_valid():
                 add_methods(self, self.schema, self.auth)
-            self.parse_data()
+                self.parse_data()
 
     def __repr__(self):
         return str(self.data)
@@ -83,9 +83,13 @@ def get(url, auth=None):
 
 
 def from_response(response, auth=None):
+    try:
+        data = response.json()
+    except ValueError:
+        data = {}
     return Resource(
         url=response.url,
         auth=auth,
-        data=response.json(),
+        data=data,
         schema=schema.from_header(response.headers, auth)
     )

@@ -200,7 +200,6 @@ class FromResponseTestCase(TestCase):
     def setUp(self):
         self._response = Response()
         self._response.url = 'http://example.com'
-        self._response.json = Mock(return_value={})
         content_type = 'application/json; profile=http://example.com/schema'
         self._response.headers = {
             'content-type': content_type
@@ -209,6 +208,16 @@ class FromResponseTestCase(TestCase):
 
     @patch('pluct.schema.from_header')
     def test_should_return_resource_from_response(self, from_header):
+        self._response.json = Mock(return_value={})
+        returned_resource = resource.from_response(self._response, self._auth)
+        self.assertEqual(returned_resource.url, 'http://example.com')
+        self.assertEqual(returned_resource.auth, self._auth)
+        self.assertEqual(returned_resource.data, {})
+
+    @patch('pluct.schema.from_header')
+    def test_should_return_resource_from_response_with_no_json_data(
+            self, from_header):
+        self._response.json = Mock(side_effect=ValueError())
         returned_resource = resource.from_response(self._response, self._auth)
         self.assertEqual(returned_resource.url, 'http://example.com')
         self.assertEqual(returned_resource.auth, self._auth)
@@ -216,5 +225,6 @@ class FromResponseTestCase(TestCase):
 
     @patch('pluct.schema.from_header')
     def test_should_obtain_schema_from_header(self, from_header):
+        self._response.json = Mock(side_effect=ValueError())
         resource.from_response(self._response, self._auth)
         from_header.assert_called_with(self._response.headers, self._auth)

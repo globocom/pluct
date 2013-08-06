@@ -14,6 +14,7 @@ class Request(object):
         self.resource = resource
 
     def _get(self, **kwargs):
+        # TODO: Refactor to resolve circular dependency.
         from pluct import resource
 
         data = self.resource.data
@@ -29,10 +30,14 @@ class Request(object):
         return resource.from_response(response)
 
     def _post(self, **kwargs):
+        # TODO: Refactor to resolve circular dependency.
+        from pluct import resource
+
         self.href = expand(self.href, self.resource.data)
         data = kwargs.pop('data')
-        return requests.post(url=self.href, data=json.dumps(data),
-                             headers=self.get_headers())
+        response = requests.post(url=self.href, data=json.dumps(data),
+                                 headers=self.get_headers())
+        return resource.from_response(response)
 
     def _patch(self, **kwargs):
         self.href = expand(self.href, self.resource.data)
