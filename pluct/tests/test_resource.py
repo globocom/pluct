@@ -228,3 +228,20 @@ class FromResponseTestCase(TestCase):
         self._response.json = Mock(side_effect=ValueError())
         resource.from_response(self._response, self._auth)
         from_header.assert_called_with(self._response.headers, self._auth)
+
+    def test_resource_with_an_array_without_schema(self):
+        data = {
+            u'units': [
+                {u'name': u'someunit'}
+            ],
+            u'name': u'registry',
+        }
+        s = schema.Schema(
+            url='url',
+            title='app schema',
+            type='object',
+            required=['name'],
+            properties={'name': {'type': 'string'}}
+        )
+        response = resource.Resource("url", data, s)
+        self.assertDictEqual(data, response.data)

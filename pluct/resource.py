@@ -55,7 +55,10 @@ class Resource(object):
                 if isinstance(value, list):
                     data_items = []
                     for item in value:
-                        prop_items = self.schema.properties[key]['items']
+                        try:
+                            prop_items = self.schema.properties[key]['items']
+                        except KeyError:
+                            break
                         if "$ref" in prop_items:
                             s = schema.get(prop_items['$ref'], self.auth)
                         else:
