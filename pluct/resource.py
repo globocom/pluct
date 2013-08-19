@@ -21,11 +21,12 @@ def add_methods(resource, s, auth=None):
 
 class Resource(object):
 
-    def __init__(self, url, data=None, schema=None, auth=None):
+    def __init__(self, url, data=None, schema=None, auth=None, timeout=30):
         self.auth = auth
         self.url = url
         self.data = data
         self.schema = schema
+        self.timeout = timeout
         if self.schema:
             if self.is_valid():
                 add_methods(self, self.schema, self.auth)

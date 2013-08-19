@@ -70,7 +70,8 @@ class ResourceTestCase(TestCase):
         self.result.log()
         get.assert_called_with(url='/apps/repos/log',
                                headers={'content-type': 'application/json',
-                                        'Authorization': 't c'})
+                                        'Authorization': 't c'},
+                               timeout=30)
 
     def test_is_valid_schema_error(self):
         old = self.result.schema.required
@@ -108,7 +109,8 @@ class ResourceTestCase(TestCase):
         url = '/apps/repos/log?lines=10'
         get.assert_called_with(
             url=url,
-            headers={'content-type': 'application/json'}
+            headers={'content-type': 'application/json'},
+            timeout=30
         )
 
         app.log(lines=10, source="app")
@@ -131,7 +133,27 @@ class ResourceTestCase(TestCase):
         url = '/apps/repos/log/10?source=app'
         get.assert_called_with(
             url=url,
-            headers={'content-type': 'application/json'}
+            headers={'content-type': 'application/json'},
+            timeout=30
+        )
+
+    @patch('pluct.resource.from_response')
+    @patch("requests.get")
+    def test_extra_parameters_timeout_uri(self, get, resource_from_response):
+        data = {
+            u'name': u'repos',
+            u'platform': u'repos',
+        }
+        self.schema.links[0]['href'] = '/apps/{name}/log/{lines}'
+        app = resource.Resource(url="appurl.com", data=data,
+                                schema=self.schema, timeout=10)
+
+        app.log(lines=10, source="app")
+        url = '/apps/repos/log/10?source=app'
+        get.assert_called_with(
+            url=url,
+            headers={'content-type': 'application/json'},
+            timeout=10
         )
 
     @patch('pluct.resource.from_response')
@@ -152,7 +174,8 @@ class ResourceTestCase(TestCase):
         url = 'http://example.org/context?name=value1'
         get.assert_called_with(
             url=url,
-            headers={'content-type': 'application/json'}
+            headers={'content-type': 'application/json'},
+            timeout=30
         )
 
     @patch('pluct.resource.from_response')
@@ -192,7 +215,8 @@ class ResourceTestCase(TestCase):
         app.data['items'][0].item()
         url = 'http://localhost/foos/1/'
         get.assert_called_with(url=url,
-                               headers={'content-type': 'application/json'})
+                               headers={'content-type': 'application/json'},
+                               timeout=30)
 
 
 class FromResponseTestCase(TestCase):

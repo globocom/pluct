@@ -26,7 +26,10 @@ class Request(object):
         querystring = urllib.urlencode(kwargs)
         if querystring:
             url += "?{0}".format(querystring)
-        response = requests.get(url=url, headers=self.get_headers())
+
+        response = requests.get(url=url,
+                                headers=self.get_headers(),
+                                timeout=self.resource.timeout)
         return resource.from_response(response)
 
     def _post(self, **kwargs):
@@ -35,8 +38,10 @@ class Request(object):
 
         self.href = expand(self.href, self.resource.data)
         data = kwargs.pop('data')
-        response = requests.post(url=self.href, data=json.dumps(data),
-                                 headers=self.get_headers())
+        response = requests.post(url=self.href,
+                                 data=json.dumps(data),
+                                 headers=self.get_headers(),
+                                 timeout=self.resource.timeout)
         return resource.from_response(response)
 
     def _patch(self, **kwargs):
@@ -45,8 +50,10 @@ class Request(object):
 
         self.href = expand(self.href, self.resource.data)
         data = kwargs.pop('data')
-        response = requests.patch(url=self.href, data=json.dumps(data),
-                                  headers=self.get_headers())
+        response = requests.patch(url=self.href,
+                                  data=json.dumps(data),
+                                  headers=self.get_headers(),
+                                  timeout=self.resource.timeout)
         return resource.from_response(response)
 
     def _put(self, **kwargs):
@@ -55,8 +62,10 @@ class Request(object):
 
         self.href = expand(self.href, self.resource.data)
         data = kwargs.pop('data')
-        response = requests.put(url=self.href, data=json.dumps(data),
-                                headers=self.get_headers())
+        response = requests.put(url=self.href,
+                                data=json.dumps(data),
+                                headers=self.get_headers(),
+                                timeout=self.resource.timeout)
         return resource.from_response(response)
 
     def _delete(self, **kwargs):
@@ -64,7 +73,9 @@ class Request(object):
         from pluct import resource
 
         self.href = expand(self.href, self.resource.data)
-        response = requests.delete(url=self.href, headers=self.get_headers())
+        response = requests.delete(url=self.href,
+                                   headers=self.get_headers(),
+                                   timeout=self.resource.timeout)
         return resource.from_response(response)
 
     def get_headers(self):
