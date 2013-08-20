@@ -233,10 +233,12 @@ class FromResponseTestCase(TestCase):
     @patch('pluct.schema.from_header')
     def test_should_return_resource_from_response(self, from_header):
         self._response.json = Mock(return_value={})
+        self._response.status_code = 200
         returned_resource = resource.from_response(self._response, self._auth)
         self.assertEqual(returned_resource.url, 'http://example.com')
         self.assertEqual(returned_resource.auth, self._auth)
         self.assertEqual(returned_resource.data, {})
+        self.assertEqual(returned_resource.response.status_code, 200)
 
     @patch('pluct.schema.from_header')
     def test_should_return_resource_from_response_with_no_json_data(

@@ -21,12 +21,14 @@ def add_methods(resource, s, auth=None):
 
 class Resource(object):
 
-    def __init__(self, url, data=None, schema=None, auth=None, timeout=30):
+    def __init__(self, url, data=None, schema=None,
+                 auth=None, response=None, timeout=30):
         self.auth = auth
         self.url = url
         self.data = data
         self.schema = schema
         self.timeout = timeout
+        self.response = response
         if self.schema:
             if self.is_valid():
                 add_methods(self, self.schema, self.auth)
@@ -95,5 +97,6 @@ def from_response(response, auth=None):
         url=response.url,
         auth=auth,
         data=data,
-        schema=schema.from_header(response.headers, auth)
+        schema=schema.from_header(response.headers, auth),
+        response=response
     )
