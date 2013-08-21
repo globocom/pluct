@@ -76,7 +76,7 @@ class Resource(object):
                     self.data[key] = data_items
 
 
-def get(url, auth=None):
+def get(url, auth=None, timeout=30):
     headers = {
         'content-type': 'application/json'
     }
@@ -84,7 +84,7 @@ def get(url, auth=None):
         headers['Authorization'] = '{0} {1}'.format(
             auth['type'], auth['credentials']
         )
-    response = requests.get(url, headers=headers)
+    response = requests.get(url, headers=headers, timeout=timeout)
     return from_response(response, auth)
 
 
