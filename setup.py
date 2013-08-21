@@ -29,7 +29,7 @@ for package in core_packages:
 
 setup(
     name='pluct',
-    version='0.4.1',
+    version='0.5.0',
     description='python client to Jsonschema APIs',
     author='Marcos Daniel Petry',
     author_email='marcospetry@gmail.com',
