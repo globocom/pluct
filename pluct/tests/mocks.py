@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import json
+import ujson
 import mock
 
 
@@ -9,7 +9,7 @@ class ServiceSchemaMock(mock.MagicMock):
         'content-type': 'application/json'
     }
     status_code = 200
-    content = json.dumps(
+    content = ujson.dumps(
         {
             'items': [
                 {
@@ -79,7 +79,7 @@ class ResourceSchemaMock(mock.MagicMock):
 
     @property
     def content(self):
-        return json.dumps(self.json)
+        return ujson.dumps(self.json)
 
 
 class ResourceItemsMock(mock.MagicMock):
@@ -87,7 +87,7 @@ class ResourceItemsMock(mock.MagicMock):
         'content-type': 'application/json'
     }
     status_code = 200
-    content = json.dumps(
+    content = ujson.dumps(
         {
             'items': [
                 {

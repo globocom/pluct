@@ -1,4 +1,7 @@
-import json
+# -*- coding: utf-8 -*-
+
+
+import ujson
 import requests
 import urllib
 
@@ -39,7 +42,7 @@ class Request(object):
         self.href = expand(self.href, self.resource.data)
         data = kwargs.pop('data')
         response = requests.post(url=self.href,
-                                 data=json.dumps(data),
+                                 data=ujson.dumps(data),
                                  headers=self.get_headers(),
                                  timeout=self.resource.timeout)
         return resource.from_response(response)
@@ -51,7 +54,7 @@ class Request(object):
         self.href = expand(self.href, self.resource.data)
         data = kwargs.pop('data')
         response = requests.patch(url=self.href,
-                                  data=json.dumps(data),
+                                  data=ujson.dumps(data),
                                   headers=self.get_headers(),
                                   timeout=self.resource.timeout)
         return resource.from_response(response)
@@ -63,7 +66,7 @@ class Request(object):
         self.href = expand(self.href, self.resource.data)
         data = kwargs.pop('data')
         response = requests.put(url=self.href,
-                                data=json.dumps(data),
+                                data=ujson.dumps(data),
                                 headers=self.get_headers(),
                                 timeout=self.resource.timeout)
         return resource.from_response(response)
