@@ -13,6 +13,8 @@ def parse_requirements(file_name):
             requirements.append(re.sub(r'\s*-e\s+.*#egg=(.*)$', r'\1', line))
         elif re.match(r'\s*-f\s+', line):
             pass
+        elif re.match(r'\s*-r\s+', line):
+            pass
         else:
             requirements.append(line)
     return requirements
