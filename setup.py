@@ -17,7 +17,6 @@ def parse_requirements(file_name):
             pass
         else:
             requirements.append(line)
-    print requirements
     return requirements
 
 
