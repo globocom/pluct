@@ -11,23 +11,23 @@ class AttrDict(dict):
         self.__dict__ = self
 
 
-def recursive_set_attr_dict(pydict):
+def recursive_wrap(pydict):
     if not isinstance(pydict, dict):
         return pydict
-    return AttrDict({k: recursive_set_attr_dict(v) for k, v in pydict.items()})
+    return AttrDict({k: recursive_wrap(v) for k, v in pydict.items()})
 
 
 class Schema(object):
     def __init__(self, url, raw_schema=None):
         object.__setattr__(self, 'url', url)
-        wrapped_schema = None if raw_schema is None else recursive_set_attr_dict(raw_schema)
-        object.__setattr__(self, '_raw_schema', wrapped_schema)
+        _schema = None if raw_schema is None else recursive_wrap(raw_schema)
+        object.__setattr__(self, '_raw_schema', _schema)
 
     def __setattr__(self, key, value):
         self.__setitem__(key, value)
 
     def __setitem__(self, key, value):
-        dict.__setitem__(self._raw_schema, key, recursive_set_attr_dict(value))
+        dict.__setitem__(self._raw_schema, key, recursive_wrap(value))
 
     def __getattr__(self, item):
         try:
