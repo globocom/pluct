@@ -19,7 +19,7 @@ def add_methods(resource, s, auth=None):
         setattr(resource, rel, method_class.process)
 
 
-class Resource(object):
+class Resource(dict):
 
     def __init__(self, url, data=None, schema=None,
                  auth=None, response=None, timeout=30):
