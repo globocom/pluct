@@ -14,21 +14,20 @@ class ResourceTestCase(TestCase):
 
     @patch("pluct.schema.get")
     @patch("requests.get")
-    def setUp(self, get, schema_get):
+    def setUp(self, mock_get, mock_schema_get):
         self.data = {
             "name": "repos",
             "platform": "js",
         }
-        self.schema = schema.Schema(
-            url="url.com",
-            type="object",
-            required=["platform"],
-            title="some title",
-            properties={
+        raw_schema = {
+            'type': "object",
+            'required': ["platform"],
+            'title': "some title",
+            'properties': {
                 u'name': {u'type': u'string'},
                 u'platform': {u'type': u'string'}
             },
-            links=[
+            'links': [
                 {
                     "href": "/apps/{name}/log",
                     "method": "GET",
@@ -39,19 +38,19 @@ class ResourceTestCase(TestCase):
                     "method": "GET",
                     "rel": "env"
                 }
-            ]
-        )
-        schema_get.return_value = self.schema
+            ]}
+        self.schema = schema.Schema(url="url.com", raw_schema=raw_schema)
+        mock_schema_get.return_value = self.schema
         self.headers = {
             'content-type': 'application/json; profile=url.com'
         }
         mock = Mock(headers=self.headers)
         mock.json.return_value = self.data
-        get.return_value = mock
+        mock_get.return_value = mock
         self.url = "http://app.com/content"
         self.auth = {"type": "t", "credentials": "c"}
         self.result = resource.get(url=self.url, auth=self.auth)
-        schema_get.assert_called_with("url.com", self.auth)
+        mock_schema_get.assert_called_with("url.com", self.auth)
 
     def test_get_should_returns_a_resource(self):
         self.assertIsInstance(self.result, resource.Resource)
@@ -75,9 +74,11 @@ class ResourceTestCase(TestCase):
 
     def test_is_valid_schema_error(self):
         old = self.result.schema.required
-        self.result.schema.required = "ble"
-        self.assertFalse(self.result.is_valid())
-        self.result.schema.required = old
+        try:
+            self.result.schema.required = ["ble"]
+            self.assertFalse(self.result.is_valid())
+        finally:
+            self.result.schema.required = old
 
     @patch("pluct.schema.from_header")
     @patch("requests.get")
@@ -181,11 +182,12 @@ class ResourceTestCase(TestCase):
     @patch('pluct.resource.from_response')
     @patch("requests.get")
     def test_schema_with_property_type_array(self, get, from_response):
-        s = schema.Schema(
-            title="title",
-            type="object",
-            url="url.com",
-            properties={
+        raw_schema = {
+
+            'title': "title",
+            'type': "object",
+
+            'properties': {
                 u'items': {
                     u'type': u'array',
                     u'items': {
@@ -202,9 +204,10 @@ class ResourceTestCase(TestCase):
                             "rel": "item",
                         }]
                     }
-                },
-            },
-        )
+                }
+            }
+        }
+        s = schema.Schema(url="url.com", raw_schema=raw_schema)
         data = {
             'items': [
                 {'id': 1},
@@ -264,10 +267,11 @@ class FromResponseTestCase(TestCase):
         }
         s = schema.Schema(
             url='url',
-            title='app schema',
-            type='object',
-            required=['name'],
-            properties={'name': {'type': 'string'}}
-        )
+            raw_schema={
+                'title': 'app schema',
+                'type': 'object',
+                'required': ['name'],
+                'properties': {'name': {'type': 'string'}}
+            })
         response = resource.Resource("url", data, s)
         self.assertDictEqual(data, response.data)

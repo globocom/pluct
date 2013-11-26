@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-
-
+import sys
+import traceback
 import requests
 
 from jsonschema import validate, SchemaError, ValidationError
@@ -47,8 +47,9 @@ class Resource(object):
 
     def is_valid(self):
         try:
-            validate(self.data, self.schema.__dict__)
+            validate(self.data, self.schema._raw_schema)
         except (SchemaError, ValidationError):
+            traceback.print_exc(file=sys.stdout)
             return False
         return True
 
@@ -65,7 +66,7 @@ class Resource(object):
                         if "$ref" in prop_items:
                             s = schema.get(prop_items['$ref'], self.auth)
                         else:
-                            s = Schema(self.url, **prop_items)
+                            s = Schema(self.url, prop_items)
                         data_items.append(
                             Resource(
                                 self.url,
