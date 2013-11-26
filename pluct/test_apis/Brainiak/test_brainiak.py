@@ -7,10 +7,8 @@ API_ENDPOINT = "http://brainiak.semantica.dev.globoi.com"
 #API_ENDPOINT = "http://localhost:5100"
 
 
-class AcceptListContexts(TestCase):
-    def setUp(self):
-        self.proxy = get(API_ENDPOINT)
+class ValidateResources(TestCase):
 
-    def test_valid_root_json_schema(self):
-        proxy_is_valid = self.proxy.is_valid()
-        self.assertTrue(proxy_is_valid)
+    def test_valid_root(self):
+        root = get(API_ENDPOINT)
+        self.assertTrue(root.is_valid())
