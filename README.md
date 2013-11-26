@@ -2,7 +2,7 @@ pluct
 =====
 
 [![Build Status](https://drone.io/github.com/globocom/pluct/status.png)](https://drone.io/github.com/globocom/pluct/latest)
-[![Build Status](https://travis-ci.org/globocom/pluct.png)](https://travis-ci.org/globocom/pluct)
+[![Build Status](https://travis-ci.org/globocom/pluct.png?branch=master)](https://travis-ci.org/globocom/pluct)
 
 ```python
 from pluct import resource
