@@ -45,6 +45,9 @@ class Resource(dict):
             return self.data[attr]
         raise KeyError
 
+    def __contains__(self, item):
+        return dict.__contains__(self.data, item)
+
     def is_valid(self):
         try:
             validate(self.data, self.schema._raw_schema)
