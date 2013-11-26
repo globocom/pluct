@@ -49,6 +49,7 @@ class Resource(object):
         try:
             validate(self.data, self.schema._raw_schema)
         except (SchemaError, ValidationError):
+            # FIXME remove line below - used only for debugging purposes
             traceback.print_exc(file=sys.stdout)
             return False
         return True
