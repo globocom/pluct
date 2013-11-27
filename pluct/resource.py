@@ -27,10 +27,9 @@ class Resource(dict):
         self.schema = schema
         self.timeout = timeout
         self.response = response
-        if self.schema:
-            if self.is_valid():
-                add_methods(self, self.schema, self.auth)
-                self.parse_data()
+        if self.schema and self.is_valid():
+            add_methods(self, self.schema, self.auth)
+            self.parse_data()
 
     def __str__(self):
         return str(self.data)
@@ -78,9 +77,7 @@ class Resource(dict):
 
 
 def get(url, auth=None, timeout=30):
-    headers = {
-        'content-type': 'application/json'
-    }
+    headers = {'content-type': 'application/json'}
     if auth:
         headers['Authorization'] = '{0} {1}'.format(
             auth['type'], auth['credentials']

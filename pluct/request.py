@@ -15,6 +15,13 @@ class Request(object):
         self.href = href
         self.auth = auth
         self.resource = resource
+        self.request_type_by_method = {
+            'GET': self._get,
+            'POST': self._post,
+            'PATCH': self._patch,
+            'PUT': self._put,
+            'DELETE': self._delete,
+        }
 
     def _get(self, **kwargs):
         # TODO: Refactor to resolve circular dependency.
@@ -93,11 +100,4 @@ class Request(object):
 
     @property
     def process(self):
-        request_type_by_method = {
-            'GET': self._get,
-            'POST': self._post,
-            'PATCH': self._patch,
-            'PUT': self._put,
-            'DELETE': self._delete,
-        }
-        return request_type_by_method[self.method]
+        return self.request_type_by_method[self.method]
