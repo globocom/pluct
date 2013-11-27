@@ -55,8 +55,15 @@ class ResourceTestCase(TestCase):
     def test_get_should_returns_a_resource(self):
         self.assertIsInstance(self.result, resource.Resource)
 
+    def test_str(self):
+        self.assertEqual(str(self.data), str(self.result))
+
     def test_data(self):
         self.assertEqual(self.data, self.result.data)
+
+    def test_iter(self):
+        iterated = [i for i in self.result]
+        self.assertEqual(iterated, self.data.keys())
 
     def test_schema(self):
         self.assertEqual(self.schema.url, self.result.schema.url)

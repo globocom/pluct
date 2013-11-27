@@ -12,3 +12,7 @@ setup: deps
 test: clean deps
 	@nosetests -s -v --with-coverage --cover-package=pluct
 	@flake8 .
+
+test_apis: clean deps
+	@nosetests -s -v --with-coverage --cover-package=pluct pluct/test_apis
+	@flake8 .

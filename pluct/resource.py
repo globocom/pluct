@@ -32,7 +32,7 @@ class Resource(dict):
                 add_methods(self, self.schema, self.auth)
                 self.parse_data()
 
-    def __repr__(self):
+    def __str__(self):
         return str(self.data)
 
     def __iter__(self):
