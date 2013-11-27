@@ -37,9 +37,4 @@ Tests
 
 The ``tests`` directory contains the standard test stack for pluct.
 
-The ``test_apis`` directory contains a different test stack, to validate APIs that are pluct-complaint.
-If you adopt pluct to interact with a public API, you can add sub-folder to test_apis to document and test it.
-If any test under ``test_apis`` breaks, this does not necessarily mean that there is a problem with pluct.
-In order to validate pluct, check exclusively the ``tests`` stack.
-
 
