@@ -6,6 +6,7 @@ from jsonschema import validate, SchemaError, ValidationError
 from pluct import schema
 from pluct.request import Request
 from pluct.schema import Schema
+from request import from_response
 
 
 def add_methods(resource, s, auth=None):
@@ -83,18 +84,4 @@ def get(url, auth=None, timeout=30):
             auth['type'], auth['credentials']
         )
     response = requests.get(url, headers=headers, timeout=timeout)
-    return from_response(response, auth)
-
-
-def from_response(response, auth=None):
-    try:
-        data = response.json()
-    except ValueError:
-        data = {}
-    return Resource(
-        url=response.url,
-        auth=auth,
-        data=data,
-        schema=schema.from_header(response.headers, auth),
-        response=response
-    )
+    return from_response(Resource, response, auth)

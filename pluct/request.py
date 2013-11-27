@@ -6,6 +6,7 @@ import requests
 import urllib
 
 from uritemplate import expand
+import schema
 
 
 class Request(object):
@@ -24,9 +25,6 @@ class Request(object):
         }
 
     def _get(self, **kwargs):
-        # TODO: Refactor to resolve circular dependency.
-        from pluct import resource
-
         data = self.resource.data
         data.update(kwargs)
         url = expand(self.href, data)
@@ -40,53 +38,41 @@ class Request(object):
         response = requests.get(url=url,
                                 headers=self.get_headers(),
                                 timeout=self.resource.timeout)
-        return resource.from_response(response)
+        return from_response(self.resource.__class__, response)
 
     def _post(self, **kwargs):
-        # TODO: Refactor to resolve circular dependency.
-        from pluct import resource
-
         self.href = expand(self.href, self.resource.data)
         data = kwargs.pop('data')
         response = requests.post(url=self.href,
                                  data=ujson.dumps(data),
                                  headers=self.get_headers(),
                                  timeout=self.resource.timeout)
-        return resource.from_response(response)
+        return from_response(self.resource.__class__, response)
 
     def _patch(self, **kwargs):
-        # TODO: Refactor to resolve circular dependency.
-        from pluct import resource
-
         self.href = expand(self.href, self.resource.data)
         data = kwargs.pop('data')
         response = requests.patch(url=self.href,
                                   data=ujson.dumps(data),
                                   headers=self.get_headers(),
                                   timeout=self.resource.timeout)
-        return resource.from_response(response)
+        return from_response(self.resource.__class__, response)
 
     def _put(self, **kwargs):
-        # TODO: Refactor to resolve circular dependency.
-        from pluct import resource
-
         self.href = expand(self.href, self.resource.data)
         data = kwargs.pop('data')
         response = requests.put(url=self.href,
                                 data=ujson.dumps(data),
                                 headers=self.get_headers(),
                                 timeout=self.resource.timeout)
-        return resource.from_response(response)
+        return from_response(self.resource.__class__, response)
 
     def _delete(self, **kwargs):
-        # TODO: Refactor to resolve circular dependency.
-        from pluct import resource
-
         self.href = expand(self.href, self.resource.data)
         response = requests.delete(url=self.href,
                                    headers=self.get_headers(),
                                    timeout=self.resource.timeout)
-        return resource.from_response(response)
+        return from_response(self.resource.__class__, response)
 
     def get_headers(self):
         header = {
@@ -101,3 +87,17 @@ class Request(object):
     @property
     def process(self):
         return self.request_type_by_method[self.method]
+
+
+def from_response(klass, response, auth=None):
+    try:
+        data = response.json()
+    except ValueError:
+        data = {}
+    return klass(
+        url=response.url,
+        auth=auth,
+        data=data,
+        schema=schema.from_header(response.headers, auth),
+        response=response
+    )

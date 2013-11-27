@@ -8,6 +8,8 @@ from mock import patch, Mock
 from urlparse import urlparse, parse_qs
 
 from pluct import resource, schema
+from pluct.resource import Resource
+from pluct.request import from_response
 
 
 class ResourceTestCase(TestCase):
@@ -53,7 +55,7 @@ class ResourceTestCase(TestCase):
         mock_schema_get.assert_called_with("url.com", self.auth)
 
     def test_get_should_returns_a_resource(self):
-        self.assertIsInstance(self.result, resource.Resource)
+        self.assertIsInstance(self.result, Resource)
 
     def test_str(self):
         self.assertEqual(str(self.data), str(self.result))
@@ -68,7 +70,7 @@ class ResourceTestCase(TestCase):
     def test_schema(self):
         self.assertEqual(self.schema.url, self.result.schema.url)
 
-    @patch('pluct.resource.from_response')
+    @patch('pluct.request.from_response')
     @patch("requests.get")
     def test_methods(self, get, resource_from_response):
         self.assertTrue(hasattr(self.result, "log"))
@@ -103,15 +105,16 @@ class ResourceTestCase(TestCase):
     def test_is_valid(self):
         self.assertTrue(self.result.is_valid())
 
-    @patch('pluct.resource.from_response')
+    @patch('pluct.request.from_response')
     @patch("requests.get")
     def test_extra_parameters_querystring(self, get, resource_from_response):
         data = {
             u'name': u'repos',
             u'platform': u'repos',
         }
-        app = resource.Resource(url="appurl.com", data=data,
-                                schema=self.schema)
+        app = Resource(url="appurl.com",
+                       data=data,
+                       schema=self.schema)
 
         app.log(lines=10)
         url = '/apps/repos/log?lines=10'
@@ -126,7 +129,7 @@ class ResourceTestCase(TestCase):
         expected = {'source': ['app'], 'lines': ['10']}
         self.assertEqual(qs, expected)
 
-    @patch('pluct.resource.from_response')
+    @patch('pluct.request.from_response')
     @patch("requests.get")
     def test_extra_parameters_uri(self, get, resource_from_response):
         data = {
@@ -134,8 +137,9 @@ class ResourceTestCase(TestCase):
             u'platform': u'repos',
         }
         self.schema.links[0]['href'] = '/apps/{name}/log/{lines}'
-        app = resource.Resource(url="appurl.com", data=data,
-                                schema=self.schema)
+        app = Resource(url="appurl.com",
+                       data=data,
+                       schema=self.schema)
 
         app.log(lines=10, source="app")
         url = '/apps/repos/log/10?source=app'
@@ -145,7 +149,7 @@ class ResourceTestCase(TestCase):
             timeout=30
         )
 
-    @patch('pluct.resource.from_response')
+    @patch('pluct.request.from_response')
     @patch("requests.get")
     def test_extra_parameters_timeout_uri(self, get, resource_from_response):
         data = {
@@ -153,8 +157,10 @@ class ResourceTestCase(TestCase):
             u'platform': u'repos',
         }
         self.schema.links[0]['href'] = '/apps/{name}/log/{lines}'
-        app = resource.Resource(url="appurl.com", data=data,
-                                schema=self.schema, timeout=10)
+        app = Resource(url="appurl.com",
+                       data=data,
+                       schema=self.schema,
+                       timeout=10)
 
         app.log(lines=10, source="app")
         url = '/apps/repos/log/10?source=app'
@@ -164,7 +170,7 @@ class ResourceTestCase(TestCase):
             timeout=10
         )
 
-    @patch('pluct.resource.from_response')
+    @patch('pluct.request.from_response')
     @patch("requests.get")
     def test_extra_parameters_uri_name_bug(self, get, resource_from_response):
         # regression for #12.
@@ -175,8 +181,9 @@ class ResourceTestCase(TestCase):
             "rel": "example"
         }
         self.schema.links.append(link)
-        app = resource.Resource(url="appurl.com", data=data,
-                                schema=self.schema)
+        app = Resource(url="appurl.com",
+                       data=data,
+                       schema=self.schema)
 
         app.example(context_name='context', name='value1')
         url = 'http://example.org/context?name=value1'
@@ -186,7 +193,7 @@ class ResourceTestCase(TestCase):
             timeout=30
         )
 
-    @patch('pluct.resource.from_response')
+    @patch('pluct.request.from_response')
     @patch("requests.get")
     def test_schema_with_property_type_array(self, get, from_response):
         raw_schema = {
@@ -221,7 +228,7 @@ class ResourceTestCase(TestCase):
                 {'id': 2}
             ]
         }
-        app = resource.Resource(url="appurl.com", data=data, schema=s)
+        app = Resource(url="appurl.com", data=data, schema=s)
         app.data['items'][0].item()
         url = 'http://localhost/foos/1/'
         get.assert_called_with(url=url,
@@ -244,7 +251,7 @@ class FromResponseTestCase(TestCase):
     def test_should_return_resource_from_response(self, from_header):
         self._response.json = Mock(return_value={})
         self._response.status_code = 200
-        returned_resource = resource.from_response(self._response, self._auth)
+        returned_resource = from_response(Resource, self._response, self._auth)
         self.assertEqual(returned_resource.url, 'http://example.com')
         self.assertEqual(returned_resource.auth, self._auth)
         self.assertEqual(returned_resource.data, {})
@@ -254,7 +261,7 @@ class FromResponseTestCase(TestCase):
     def test_should_return_resource_from_response_with_no_json_data(
             self, from_header):
         self._response.json = Mock(side_effect=ValueError())
-        returned_resource = resource.from_response(self._response, self._auth)
+        returned_resource = from_response(Resource, self._response, self._auth)
         self.assertEqual(returned_resource.url, 'http://example.com')
         self.assertEqual(returned_resource.auth, self._auth)
         self.assertEqual(returned_resource.data, {})
@@ -262,7 +269,7 @@ class FromResponseTestCase(TestCase):
     @patch('pluct.schema.from_header')
     def test_should_obtain_schema_from_header(self, from_header):
         self._response.json = Mock(side_effect=ValueError())
-        resource.from_response(self._response, self._auth)
+        from_response(Resource, self._response, self._auth)
         from_header.assert_called_with(self._response.headers, self._auth)
 
     def test_resource_with_an_array_without_schema(self):
@@ -280,5 +287,5 @@ class FromResponseTestCase(TestCase):
                 'required': ['name'],
                 'properties': {'name': {'type': 'string'}}
             })
-        response = resource.Resource("url", data, s)
+        response = Resource("url", data, s)
         self.assertDictEqual(data, response.data)
