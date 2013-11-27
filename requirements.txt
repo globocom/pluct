@@ -2,3 +2,5 @@ requests==2.0.1
 uritemplate==0.6
 ujson==1.33
 jsonschema==2.3.0
+
+-e git://github.com/globocom/alf.git#egg=alf
