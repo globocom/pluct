@@ -10,7 +10,8 @@ class Schema(object):
     def __init__(self, url, type=None, title=None, required=None,
                  properties=None, links=None):
         self.url = url
-        self.type = type
+        if type:
+            self.type = type
         if required:
             self.required = required
         self.title = title
