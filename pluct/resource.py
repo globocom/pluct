@@ -66,7 +66,9 @@ class Resource(dict):
                         if "$ref" in prop_items:
                             ref = prop_items['$ref']
                             if ref.startswith('#/definitions'):
-                                s = Schema(None, raw_schema=self.schema.definitions[ref.split('/')[-1]])
+                                def_name = ref.split('/')[-1]
+                                raw_s = self.schema.definitions[def_name]
+                                s = Schema(None, raw_schema=raw_s)
                             else:
                                 s = schema.get(ref, self.auth)
                         else:
