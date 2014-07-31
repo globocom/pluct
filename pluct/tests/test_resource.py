@@ -20,6 +20,10 @@ class ResourceTestCase(TestCase):
         self.data = {
             "name": "repos",
             "platform": "js",
+            "media": {
+                "url": "url.com/example.jpg",
+                "title": "example image"
+            }
         }
         raw_schema = {
             'type': "object",
@@ -27,7 +31,17 @@ class ResourceTestCase(TestCase):
             'title': "some title",
             'properties': {
                 u'name': {u'type': u'string'},
-                u'platform': {u'type': u'string'}
+                u'platform': {u'type': u'string'},
+                u'media': {'$ref': '#/definitions/media'}
+            },
+            'definitions': {
+                'media': {
+                    'type': "object",
+                    'properties': {
+                        "url": {"type": "string"},
+                        "title": {"type": "string"},
+                    }
+                }
             },
             'links': [
                 {

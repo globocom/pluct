@@ -64,7 +64,11 @@ class Resource(dict):
                         except KeyError:
                             break
                         if "$ref" in prop_items:
-                            s = schema.get(prop_items['$ref'], self.auth)
+                            ref = prop_items['$ref']
+                            if ref.startswith('#/definitions'):
+                                s = Schema(None, raw_schema=self.schema.definitions[ref.split('/')[-1]])
+                            else:
+                                s = schema.get(ref, self.auth)
                         else:
                             s = Schema(self.url, prop_items)
                         data_items.append(

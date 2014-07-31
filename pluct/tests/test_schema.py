@@ -12,7 +12,8 @@ class SchemaTestCase(TestCase):
                 "cname": {"type": "string"},
                 "ip": {"type": "string"},
                 "name": {"type": "string"},
-                "platform": {"type": "string"}
+                "platform": {"type": "string"},
+                "media": {"$ref": "#/definitions/media"}
             },
             "links": [
                 {
@@ -27,6 +28,15 @@ class SchemaTestCase(TestCase):
                 }
             ],
             "required": ["platform", "name"],
+            "definitions": {
+                "media": {
+                    "type": "object",
+                    "properties": {
+                        "url": {"type": "string"},
+                        "title": {"type": "string"},
+                    }
+                }
+            }
         }
         mock = Mock()
         get.return_value = mock
@@ -49,6 +59,9 @@ class SchemaTestCase(TestCase):
 
     def test_schema_links(self):
         self.assertListEqual(self.data["links"], self.result.links)
+
+    def test_schema_definitions(self):
+        self.assertDictEqual(self.data["definitions"], self.result.definitions)
 
     def test_schema_url(self):
         self.assertEqual(self.url, self.result.url)
