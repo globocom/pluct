@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-
-
 import requests
 
 from jsonschema import validate, SchemaError, ValidationError
@@ -8,6 +6,7 @@ from jsonschema import validate, SchemaError, ValidationError
 from pluct import schema
 from pluct.request import Request
 from pluct.schema import Schema
+from request import from_response
 
 
 def add_methods(resource, s, auth=None):
@@ -19,7 +18,7 @@ def add_methods(resource, s, auth=None):
         setattr(resource, rel, method_class.process)
 
 
-class Resource(object):
+class Resource(dict):
 
     def __init__(self, url, data=None, schema=None,
                  auth=None, response=None, timeout=30):
@@ -29,12 +28,11 @@ class Resource(object):
         self.schema = schema
         self.timeout = timeout
         self.response = response
-        if self.schema:
-            if self.is_valid():
-                add_methods(self, self.schema, self.auth)
-                self.parse_data()
+        if self.schema and self.is_valid():
+            add_methods(self, self.schema, self.auth)
+            self.parse_data()
 
-    def __repr__(self):
+    def __str__(self):
         return str(self.data)
 
     def __iter__(self):
@@ -45,9 +43,12 @@ class Resource(object):
             return self.data[attr]
         raise KeyError
 
+    def __contains__(self, item):
+        return dict.__contains__(self.data, item)
+
     def is_valid(self):
         try:
-            validate(self.data, self.schema.__dict__)
+            validate(self.data, self.schema._raw_schema)
         except (SchemaError, ValidationError):
             return False
         return True
@@ -65,7 +66,7 @@ class Resource(object):
                         if "$ref" in prop_items:
                             s = schema.get(prop_items['$ref'], self.auth)
                         else:
-                            s = Schema(self.url, **prop_items)
+                            s = Schema(self.url, prop_items)
                         data_items.append(
                             Resource(
                                 self.url,
@@ -77,26 +78,10 @@ class Resource(object):
 
 
 def get(url, auth=None, timeout=30):
-    headers = {
-        'content-type': 'application/json'
-    }
+    headers = {'content-type': 'application/json'}
     if auth:
         headers['Authorization'] = '{0} {1}'.format(
             auth['type'], auth['credentials']
         )
     response = requests.get(url, headers=headers, timeout=timeout)
-    return from_response(response, auth)
-
-
-def from_response(response, auth=None):
-    try:
-        data = response.json()
-    except ValueError:
-        data = {}
-    return Resource(
-        url=response.url,
-        auth=auth,
-        data=data,
-        schema=schema.from_header(response.headers, auth),
-        response=response
-    )
+    return from_response(Resource, response, auth)

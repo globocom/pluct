@@ -1,25 +1,51 @@
 # -*- coding: utf-8 -*-
 
-
 import ujson
-import requests
 import urllib
 
+import requests
 from uritemplate import expand
+from alf.client import Client
+
+from pluct import schema
+
+
+class Credentials(object):
+
+    def __init__(self, token_endpoint, client_id, client_secret):
+        self.token_endpoint = token_endpoint
+        self.client_id = client_id
+        self.client_secret = client_secret
 
 
 class Request(object):
 
-    def __init__(self, method, href, auth, resource):
+    def __init__(self, method, href, auth, resource, credentials=None):
         self.method = method
         self.href = href
         self.auth = auth
         self.resource = resource
+        self._request_type_by_method = {
+            'GET': self._get,
+            'POST': self._post,
+            'PATCH': self._patch,
+            'PUT': self._put,
+            'DELETE': self._delete,
+        }
+        self._credentials = credentials
+        if self._credentials:
+            if not isinstance(self._credentials, Credentials):
+                msg = u"Request was initialized with invalid credentials {0:s}"
+                raise TypeError(msg.format(credentials))
+
+            self._client = Client(token_endpoint=credentials.token_endpoint,
+                                  client_id=credentials.client_id,
+                                  client_secret=credentials.client_secret)
+
+    def _remote(self):
+        return self._credentials if self._credentials else requests
 
     def _get(self, **kwargs):
-        # TODO: Refactor to resolve circular dependency.
-        from pluct import resource
-
         data = self.resource.data
         data.update(kwargs)
         url = expand(self.href, data)
@@ -30,56 +56,44 @@ class Request(object):
         if querystring:
             url += "?{0}".format(querystring)
 
-        response = requests.get(url=url,
-                                headers=self.get_headers(),
-                                timeout=self.resource.timeout)
-        return resource.from_response(response)
+        response = self._remote().get(url=url,
+                                      headers=self.get_headers(),
+                                      timeout=self.resource.timeout)
+        return from_response(self.resource.__class__, response)
 
     def _post(self, **kwargs):
-        # TODO: Refactor to resolve circular dependency.
-        from pluct import resource
-
         self.href = expand(self.href, self.resource.data)
         data = kwargs.pop('data')
-        response = requests.post(url=self.href,
-                                 data=ujson.dumps(data),
-                                 headers=self.get_headers(),
-                                 timeout=self.resource.timeout)
-        return resource.from_response(response)
+        response = self._remote().post(url=self.href,
+                                       data=ujson.dumps(data),
+                                       headers=self.get_headers(),
+                                       timeout=self.resource.timeout)
+        return from_response(self.resource.__class__, response)
 
     def _patch(self, **kwargs):
-        # TODO: Refactor to resolve circular dependency.
-        from pluct import resource
-
         self.href = expand(self.href, self.resource.data)
         data = kwargs.pop('data')
-        response = requests.patch(url=self.href,
-                                  data=ujson.dumps(data),
-                                  headers=self.get_headers(),
-                                  timeout=self.resource.timeout)
-        return resource.from_response(response)
+        response = self._remote().patch(url=self.href,
+                                        data=ujson.dumps(data),
+                                        headers=self.get_headers(),
+                                        timeout=self.resource.timeout)
+        return from_response(self.resource.__class__, response)
 
     def _put(self, **kwargs):
-        # TODO: Refactor to resolve circular dependency.
-        from pluct import resource
-
         self.href = expand(self.href, self.resource.data)
         data = kwargs.pop('data')
-        response = requests.put(url=self.href,
-                                data=ujson.dumps(data),
-                                headers=self.get_headers(),
-                                timeout=self.resource.timeout)
-        return resource.from_response(response)
+        response = self._remote().put(url=self.href,
+                                      data=ujson.dumps(data),
+                                      headers=self.get_headers(),
+                                      timeout=self.resource.timeout)
+        return from_response(self.resource.__class__, response)
 
     def _delete(self, **kwargs):
-        # TODO: Refactor to resolve circular dependency.
-        from pluct import resource
-
         self.href = expand(self.href, self.resource.data)
-        response = requests.delete(url=self.href,
-                                   headers=self.get_headers(),
-                                   timeout=self.resource.timeout)
-        return resource.from_response(response)
+        response = self._remote().delete(url=self.href,
+                                         headers=self.get_headers(),
+                                         timeout=self.resource.timeout)
+        return from_response(self.resource.__class__, response)
 
     def get_headers(self):
         header = {
@@ -93,11 +107,18 @@ class Request(object):
 
     @property
     def process(self):
-        request_type_by_method = {
-            'GET': self._get,
-            'POST': self._post,
-            'PATCH': self._patch,
-            'PUT': self._put,
-            'DELETE': self._delete,
-        }
-        return request_type_by_method[self.method]
+        return self._request_type_by_method[self.method]
+
+
+def from_response(klass, response, auth=None):
+    try:
+        data = response.json()
+    except ValueError:
+        data = {}
+    return klass(
+        url=response.url,
+        auth=auth,
+        data=data,
+        schema=schema.from_header(response.headers, auth),
+        response=response
+    )

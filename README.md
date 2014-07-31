@@ -30,3 +30,11 @@ Limitations
 *pluct* is an experimental project. its limitations:
 
 * partial support for draft 4.
+
+
+Tests
+-----
+
+The ``tests`` directory contains the standard test stack for pluct.
+
+
