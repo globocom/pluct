@@ -1,5 +1,5 @@
 from unittest import TestCase
-from mock import patch, Mock
+from mock import patch, Mock, ANY
 from pluct import schema
 
 
@@ -77,3 +77,30 @@ class SchemaTestCase(TestCase):
     def test_required_should_not_be_setted_by_default(self):
         s = schema.Schema(url="")
         self.assertFalse(hasattr(s, "required"))
+
+
+class FromHeaderTestCase(TestCase):
+
+    SCHEMA_URL = 'http://a.com/schema'
+
+    @patch("requests.get")
+    def test_should_read_schema_from_profile(self, get):
+        headers = {
+            'content-type': (
+                'application/json; charset=utf-8; profile=%s'
+                % self.SCHEMA_URL)
+        }
+        schema.from_header(headers)
+
+        get.assert_called_with(self.SCHEMA_URL, headers=ANY)
+
+    @patch("requests.get")
+    def test_should_parse_schema_from_quoted_profile(self, get):
+        headers = {
+            'content-type': (
+                'application/json; charset=utf-8; profile="%s"'
+                % self.SCHEMA_URL)
+        }
+        schema.from_header(headers)
+
+        get.assert_called_with(self.SCHEMA_URL, headers=ANY)

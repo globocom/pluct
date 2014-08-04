@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-import re
+from cgi import parse_header
 import requests
 
 
@@ -54,8 +54,14 @@ def get(url, auth=None):
 
 
 def from_header(headers, auth=None):
-    p = re.compile(".*profile=([^;]+);?")
-    schema_url = p.findall(headers.get('content-type', ''))
-    if schema_url:
-        return get(schema_url[0], auth)
-    return None
+    if 'content-type' not in headers:
+        return None
+
+    full_content_type = 'content-type: {0}'.format(headers['content-type'])
+    header, parameters = parse_header(full_content_type)
+
+    if 'profile' not in parameters:
+        return None
+
+    schema_url = parameters['profile']
+    return get(schema_url, auth)
