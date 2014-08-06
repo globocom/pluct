@@ -57,6 +57,10 @@ class ResourceTestCase(TestCase):
     def test_get_should_returns_a_resource(self):
         self.assertIsInstance(self.result, Resource)
 
+    def test_missing_attribute(self):
+        with self.assertRaises(AttributeError):
+            self.result.not_found
+
     def test_str(self):
         self.assertEqual(str(self.data), str(self.result))
 

@@ -9,15 +9,6 @@ from pluct.schema import Schema
 from request import from_response
 
 
-def add_methods(resource, s, auth=None):
-    for link in getattr(s, "links", []) or []:
-        method = link.get("method", "GET")
-        href = link.get("href")
-        rel = link.get("rel")
-        method_class = Request(method, href, auth, resource)
-        setattr(resource, rel, method_class.process)
-
-
 class Resource(dict):
 
     def __init__(self, url, data=None, schema=None,
@@ -29,8 +20,16 @@ class Resource(dict):
         self.timeout = timeout
         self.response = response
         if self.schema and self.is_valid():
-            add_methods(self, self.schema, self.auth)
             self.parse_data()
+
+    def __getattr__(self, name):
+        for link in getattr(self.schema, "links", []) or []:
+            method = link.get("method", "GET")
+            href = link.get("href")
+            if link.get('rel') == name:
+                method_class = Request(method, href, self.auth, self)
+                return method_class.process
+        return super(Resource, self).__getattribute__(name)
 
     def __str__(self):
         return str(self.data)
