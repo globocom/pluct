@@ -10,5 +10,5 @@ deps:
 setup: deps
 
 test: clean deps
-	@nosetests -s -v --with-coverage --cover-package=pluct
+	@nosetests -s -v --with-coverage --cover-package=pluct --cover-branches --cover-erase
 	@flake8 .
