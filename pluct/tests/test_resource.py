@@ -230,7 +230,7 @@ class ParseResourceTestCase(TestCase):
         self.schema = schema.Schema(url="url.com", raw_schema=raw_schema)
 
     @patch("requests.get")
-    def test_should_wrap_objects_in_array_as_resources(self, get):
+    def test_wraps_array_objects_as_resources(self, get):
         data = {
             'objects': [
                 {'id': 1}
@@ -243,7 +243,7 @@ class ParseResourceTestCase(TestCase):
         get.assert_called_with(
             url=url, headers={'content-type': 'application/json'}, timeout=30)
 
-    def test_should_wrap_objects_in_array_as_resources_even_without_items_schema(self):
+    def test_wraps_array_objects_as_resources_even_without_items_key(self):
         data = {
             'values': [
                 {'id': 1}
@@ -255,9 +255,8 @@ class ParseResourceTestCase(TestCase):
         self.assertIsInstance(item, Resource)
         self.assertEqual(item.data['id'], 1)
 
-
     @patch("requests.get")
-    def test_should_not_wrap_non_objects_in_array_as_resources(self, get):
+    def test_doesnt_wrap_non_objects_as_resources(self, get):
         data = {
             'values': [
                 1,
