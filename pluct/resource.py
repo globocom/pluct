@@ -67,18 +67,17 @@ class Resource(dict):
                 continue
 
             data_items = []
+            prop_items = item_schema.get('items', {})
+
+            if "$ref" in prop_items:
+                s = schema.get(prop_items['$ref'], self.auth)
+            else:
+                s = Schema(self.url, prop_items)
 
             for item in value:
                 if not isinstance(item, dict):
                     data_items.append(item)
                     continue
-
-                prop_items = item_schema.get('items', {})
-
-                if "$ref" in prop_items:
-                    s = schema.get(prop_items['$ref'], self.auth)
-                else:
-                    s = Schema(self.url, prop_items)
 
                 data_items.append(
                     Resource(
