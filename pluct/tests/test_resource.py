@@ -197,19 +197,18 @@ class ResourceTestCase(TestCase):
             timeout=30
         )
 
-    @patch('pluct.request.from_response')
-    @patch("requests.get")
-    def test_schema_with_property_type_array(self, get, from_response):
-        raw_schema = {
 
+class ParseResourceTestCase(TestCase):
+
+    def setUp(self):
+        raw_schema = {
             'title': "title",
             'type': "object",
 
             'properties': {
-                u'items': {
+                u'objects': {
                     u'type': u'array',
                     u'items': {
-                        'title': 'Foo',
                         'type': 'object',
                         'properties': {
                             'id': {
@@ -222,22 +221,44 @@ class ResourceTestCase(TestCase):
                             "rel": "item",
                         }]
                     }
+                },
+                u'values': {
+                    u'type': u'array'
                 }
             }
         }
-        s = schema.Schema(url="url.com", raw_schema=raw_schema)
+        self.schema = schema.Schema(url="url.com", raw_schema=raw_schema)
+
+    @patch('pluct.request.from_response')
+    @patch("requests.get")
+    def test_should_wrap_objects_in_array_as_resources(self, get, from_response):
         data = {
-            'items': [
-                {'id': 1},
-                {'id': 2}
+            'objects': [
+                {'id': 1}
             ]
         }
-        app = Resource(url="appurl.com", data=data, schema=s)
-        app.data['items'][0].item()
+        app = Resource(url="appurl.com", data=data, schema=self.schema)
+        app.data['objects'][0].item()
         url = 'http://localhost/foos/1/'
-        get.assert_called_with(url=url,
-                               headers={'content-type': 'application/json'},
-                               timeout=30)
+
+        get.assert_called_with(
+            url=url, headers={'content-type': 'application/json'}, timeout=30)
+
+    @patch('pluct.request.from_response')
+    @patch("requests.get")
+    def test_should_not_wrap_non_objects_in_array_as_resources(self, get, from_response):
+        data = {
+            'values': [
+                1,
+                'string',
+                ['array']
+            ]
+        }
+        resource_list = Resource(
+            url="appurl.com", data=data, schema=self.schema)
+        values = resource_list['values']
+
+        self.assertEqual(values, data['values'])
 
 
 class FromResponseTestCase(TestCase):

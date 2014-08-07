@@ -53,27 +53,45 @@ class Resource(dict):
         return True
 
     def parse_data(self):
-        if isinstance(self.data, dict):
-            for key, value in self.data.items():
-                if isinstance(value, list):
-                    data_items = []
-                    for item in value:
-                        try:
-                            prop_items = self.schema.properties[key]['items']
-                        except KeyError:
-                            break
-                        if "$ref" in prop_items:
-                            s = schema.get(prop_items['$ref'], self.auth)
-                        else:
-                            s = Schema(self.url, prop_items)
-                        data_items.append(
-                            Resource(
-                                self.url,
-                                data=item,
-                                schema=s,
-                            )
-                        )
-                    self.data[key] = data_items
+        if not isinstance(self.data, dict):
+            return
+
+        for key, value in self.data.items():
+            if not isinstance(value, list):
+                continue
+
+            item_schema = self.schema.properties.get(key, None)
+            is_array = item_schema and item_schema['type'] == 'array'
+
+            if not is_array:
+                continue
+
+            data_items = []
+
+            for item in value:
+                if not isinstance(item, dict):
+                    data_items.append(item)
+                    continue
+
+                try:
+                    prop_items = self.schema.properties[key]['items']
+                except KeyError:
+                    break
+
+                if "$ref" in prop_items:
+                    s = schema.get(prop_items['$ref'], self.auth)
+                else:
+                    s = Schema(self.url, prop_items)
+
+                data_items.append(
+                    Resource(
+                        self.url,
+                        data=item,
+                        schema=s,
+                    )
+                )
+
+            self.data[key] = data_items
 
 
 def get(url, auth=None, timeout=30):
