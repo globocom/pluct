@@ -229,9 +229,8 @@ class ParseResourceTestCase(TestCase):
         }
         self.schema = schema.Schema(url="url.com", raw_schema=raw_schema)
 
-    @patch('pluct.request.from_response')
     @patch("requests.get")
-    def test_should_wrap_objects_in_array_as_resources(self, get, from_response):
+    def test_should_wrap_objects_in_array_as_resources(self, get):
         data = {
             'objects': [
                 {'id': 1}
@@ -244,9 +243,8 @@ class ParseResourceTestCase(TestCase):
         get.assert_called_with(
             url=url, headers={'content-type': 'application/json'}, timeout=30)
 
-    @patch('pluct.request.from_response')
     @patch("requests.get")
-    def test_should_not_wrap_non_objects_in_array_as_resources(self, get, from_response):
+    def test_should_not_wrap_non_objects_in_array_as_resources(self, get):
         data = {
             'values': [
                 1,
