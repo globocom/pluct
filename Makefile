@@ -9,6 +9,10 @@ deps:
 
 setup: deps
 
+release:
+	@echo 'PyPI server: '; read PYPI_SERVER; \
+		python setup.py -q sdist upload -r $$PYPI_SERVER
+
 test: clean deps
 	@nosetests -s -v --with-coverage --cover-package=pluct --cover-branches --cover-erase
 	@flake8 .
