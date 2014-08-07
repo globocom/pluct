@@ -243,6 +243,19 @@ class ParseResourceTestCase(TestCase):
         get.assert_called_with(
             url=url, headers={'content-type': 'application/json'}, timeout=30)
 
+    def test_should_wrap_objects_in_array_as_resources_even_without_items_schema(self):
+        data = {
+            'values': [
+                {'id': 1}
+            ]
+        }
+        resource = Resource(url="appurl.com", data=data, schema=self.schema)
+
+        item = resource['values'][0]
+        self.assertIsInstance(item, Resource)
+        self.assertEqual(item.data['id'], 1)
+
+
     @patch("requests.get")
     def test_should_not_wrap_non_objects_in_array_as_resources(self, get):
         data = {

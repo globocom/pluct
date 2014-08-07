@@ -60,8 +60,8 @@ class Resource(dict):
             if not isinstance(value, list):
                 continue
 
-            item_schema = self.schema.properties.get(key, None)
-            is_array = item_schema and item_schema['type'] == 'array'
+            item_schema = self.schema.properties.get(key, {})
+            is_array = item_schema.get('type') == 'array'
 
             if not is_array:
                 continue
@@ -73,10 +73,7 @@ class Resource(dict):
                     data_items.append(item)
                     continue
 
-                try:
-                    prop_items = self.schema.properties[key]['items']
-                except KeyError:
-                    break
+                prop_items = item_schema.get('items', {})
 
                 if "$ref" in prop_items:
                     s = schema.get(prop_items['$ref'], self.auth)
