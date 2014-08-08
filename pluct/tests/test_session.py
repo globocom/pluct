@@ -35,12 +35,6 @@ class SessionRequestsTestCase(TestCase):
         self.session = Session()
         self.session.client = self.client
 
-        self.from_response_patcher = patch('pluct.session.from_response')
-        self.from_response = self.from_response_patcher.start()
-
-    def tearDown(self):
-        self.from_response_patcher.stop()
-
     def test_delegates_request_to_client(self):
         self.session.request('get', '/')
         self.client.request.assert_called_with(
@@ -68,7 +62,25 @@ class SessionRequestsTestCase(TestCase):
         self.client.request.assert_called_with(
             'get', '/', headers=custom_headers)
 
+    def test_returns_response(self):
+        response = self.session.request('get', '/')
+        self.assertIs(response, self.response)
+
+
+class SessionResourceTestCase(TestCase):
+
+    def setUp(self):
+        self.response = Mock()
+        self.session = Session()
+
+        patch.object(self.session, 'request').start()
+        self.session.request.return_value = self.response
+
+    def tearDown(self):
+        patch.stopall()
+
     def test_creates_resource_from_response(self):
-        self.session.request('get', '/')
-        self.from_response.assert_called_with(
-            klass=Resource, response=self.response)
+        with patch('pluct.session.from_response') as from_response:
+            self.session.resource('get', '/')
+            from_response.assert_called_with(
+                klass=Resource, response=self.response)

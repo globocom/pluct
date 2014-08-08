@@ -16,6 +16,11 @@ class Session(object):
         else:
             self.client = client
 
+    def resource(self, url, *args, **kwargs):
+        response = self.request('get', url, *args, **kwargs)
+        return from_response(
+            klass=Resource, response=response)
+
     def request(self, method, url, *args, **kwargs):
         if self.timeout is not None:
             kwargs.setdefault('timeout', self.timeout)
@@ -25,5 +30,4 @@ class Session(object):
 
         response = self.client.request(method, url, *args, **kwargs)
 
-        return from_response(
-            klass=Resource, response=response)
+        return response
