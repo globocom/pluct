@@ -12,11 +12,10 @@ from request import from_response
 class Resource(dict):
 
     def __init__(self, url, data=None, schema=None,
-                 response=None, timeout=30, session=None):
+                 response=None, session=None):
         self.url = url
         self.data = data
         self.schema = schema
-        self.timeout = timeout
         self.response = response
         if self.schema and self.is_valid():
             self.parse_data()
