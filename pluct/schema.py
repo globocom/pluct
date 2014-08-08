@@ -41,19 +41,15 @@ class Schema(object):
         return dict.__getitem__(self._raw_schema, item)
 
 
-def get(url, auth=None):
+def get(url):
     headers = {
         'content-type': 'application/json'
     }
-    if auth:
-        headers['Authorization'] = '{0} {1}'.format(
-            auth['type'], auth['credentials']
-        )
     data = requests.get(url, headers=headers).json()
     return Schema(url, data)
 
 
-def from_header(headers, auth=None):
+def from_header(headers):
     if 'content-type' not in headers:
         return None
 
@@ -64,4 +60,4 @@ def from_header(headers, auth=None):
         return None
 
     schema_url = parameters['profile']
-    return get(schema_url, auth)
+    return get(schema_url)

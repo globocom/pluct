@@ -5,25 +5,15 @@ import urllib
 
 import requests
 from uritemplate import expand
-from alf.client import Client
 
 from pluct import schema
 
 
-class Credentials(object):
-
-    def __init__(self, token_endpoint, client_id, client_secret):
-        self.token_endpoint = token_endpoint
-        self.client_id = client_id
-        self.client_secret = client_secret
-
-
 class Request(object):
 
-    def __init__(self, method, href, auth, resource, credentials=None):
+    def __init__(self, method, href, resource):
         self.method = method
         self.href = href
-        self.auth = auth
         self.resource = resource
         self._request_type_by_method = {
             'GET': self._get,
@@ -32,18 +22,9 @@ class Request(object):
             'PUT': self._put,
             'DELETE': self._delete,
         }
-        self._credentials = credentials
-        if self._credentials:
-            if not isinstance(self._credentials, Credentials):
-                msg = u"Request was initialized with invalid credentials {0:s}"
-                raise TypeError(msg.format(credentials))
-
-            self._client = Client(token_endpoint=credentials.token_endpoint,
-                                  client_id=credentials.client_id,
-                                  client_secret=credentials.client_secret)
 
     def _remote(self):
-        return self._credentials if self._credentials else requests
+        return requests
 
     def _get(self, **kwargs):
         data = self.resource.data
@@ -99,10 +80,6 @@ class Request(object):
         header = {
             'content-type': 'application/json'
         }
-        if self.auth:
-            header['Authorization'] = '{0} {1}'.format(
-                self.auth['type'], self.auth['credentials'])
-
         return header
 
     @property
@@ -110,15 +87,14 @@ class Request(object):
         return self._request_type_by_method[self.method]
 
 
-def from_response(klass, response, auth=None):
+def from_response(klass, response):
     try:
         data = response.json()
     except ValueError:
         data = {}
     return klass(
         url=response.url,
-        auth=auth,
         data=data,
-        schema=schema.from_header(response.headers, auth),
+        schema=schema.from_header(response.headers),
         response=response
     )

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-import requests
 
-from jsonschema import validate, SchemaError, ValidationError
+import requests
+from jsonschema import SchemaError, validate, ValidationError
 
 from pluct import schema
 from pluct.request import Request
@@ -12,8 +12,7 @@ from request import from_response
 class Resource(dict):
 
     def __init__(self, url, data=None, schema=None,
-                 auth=None, response=None, timeout=30):
-        self.auth = auth
+                 response=None, timeout=30, session=None):
         self.url = url
         self.data = data
         self.schema = schema
@@ -27,7 +26,7 @@ class Resource(dict):
             method = link.get("method", "GET")
             href = link.get("href")
             if link.get('rel') == name:
-                method_class = Request(method, href, self.auth, self)
+                method_class = Request(method, href, self)
                 return method_class.process
         return super(Resource, self).__getattribute__(name)
 
@@ -70,7 +69,7 @@ class Resource(dict):
             prop_items = item_schema.get('items', {})
 
             if "$ref" in prop_items:
-                s = schema.get(prop_items['$ref'], self.auth)
+                s = schema.get(prop_items['$ref'])
             else:
                 s = Schema(self.url, prop_items)
 
@@ -90,11 +89,8 @@ class Resource(dict):
             self.data[key] = data_items
 
 
-def get(url, auth=None, timeout=30):
+def get(url, timeout=30):
     headers = {'content-type': 'application/json'}
-    if auth:
-        headers['Authorization'] = '{0} {1}'.format(
-            auth['type'], auth['credentials']
-        )
     response = requests.get(url, headers=headers, timeout=timeout)
-    return from_response(Resource, response, auth)
+    return from_response(Resource, response)
+
