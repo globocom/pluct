@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import requests
+import uritemplate
 from jsonschema import SchemaError, validate, ValidationError
 
 from pluct import schema
-from pluct.request import Request
 from pluct.schema import Schema
 from request import from_response
 
@@ -21,14 +21,7 @@ class Resource(dict):
         if self.schema and self.is_valid():
             self.parse_data()
 
-    def __getattr__(self, name):
-        for link in getattr(self.schema, "links", []) or []:
-            method = link.get("method", "GET")
-            href = link.get("href")
-            if link.get('rel') == name:
-                method_class = Request(method, href, self)
-                return method_class.process
-        return super(Resource, self).__getattribute__(name)
+        self.session = session
 
     def __str__(self):
         return str(self.data)
@@ -88,9 +81,31 @@ class Resource(dict):
 
             self.data[key] = data_items
 
+    def rel(self, name, **kwargs):
+        link = self.get_rel(name)
+        method = link.get('method', 'get')
+        href = link.get('href', '')
 
-def get(url, timeout=30):
-    headers = {'content-type': 'application/json'}
-    response = requests.get(url, headers=headers, timeout=timeout)
+        params = kwargs.get('params', {})
+        context = dict(self.data, **params)
+
+        variables = uritemplate.variables(href)
+        uri = uritemplate.expand(href, context)
+
+        if 'params' in kwargs:
+            unused_params = {
+                k: v for k, v in params.items() if k not in variables}
+            kwargs['params'] = unused_params
+
+        return self.session.request(method, uri, **kwargs)
+
+    def get_rel(self, name):
+        for link in getattr(self.schema, "links", []) or []:
+            if link.get('rel') == name:
+                return link
+        return None
+
+
+def get(url, *args, **kwargs):
+    response = requests.get(url, *args, **kwargs)
     return from_response(Resource, response)
-

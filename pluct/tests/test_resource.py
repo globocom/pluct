@@ -5,7 +5,6 @@ from requests import Response
 
 from unittest import TestCase
 from mock import patch, Mock
-from urlparse import urlparse, parse_qs
 
 from pluct import resource, schema
 from pluct.resource import Resource
@@ -73,16 +72,6 @@ class ResourceTestCase(TestCase):
     def test_schema(self):
         self.assertEqual(self.schema.url, self.result.schema.url)
 
-    @patch('pluct.request.from_response')
-    @patch("requests.get")
-    def test_methods(self, get, resource_from_response):
-        self.assertTrue(hasattr(self.result, "log"))
-        self.assertTrue(hasattr(self.result, "env"))
-        self.result.log()
-        get.assert_called_with(url='/apps/repos/log',
-                               headers={'content-type': 'application/json'},
-                               timeout=30)
-
     def test_is_valid_schema_error(self):
         old = self.result.schema.required
         try:
@@ -107,139 +96,52 @@ class ResourceTestCase(TestCase):
     def test_is_valid(self):
         self.assertTrue(self.result.is_valid())
 
-    @patch('pluct.request.from_response')
-    @patch("requests.get")
-    def test_extra_parameters_querystring(self, get, resource_from_response):
-        data = {
-            u'name': u'repos',
-            u'platform': u'repos',
-        }
-        app = Resource(url="appurl.com",
-                       data=data,
-                       schema=self.schema)
-
-        app.log(lines=10)
-        url = '/apps/repos/log?lines=10'
-        get.assert_called_with(
-            url=url,
-            headers={'content-type': 'application/json'},
-            timeout=30
-        )
-
-        app.log(lines=10, source="app")
-        qs = parse_qs(urlparse(get.call_args[1]['url']).query)
-        expected = {'source': ['app'], 'lines': ['10']}
-        self.assertEqual(qs, expected)
-
-    @patch('pluct.request.from_response')
-    @patch("requests.get")
-    def test_extra_parameters_uri(self, get, resource_from_response):
-        data = {
-            u'name': u'repos',
-            u'platform': u'repos',
-        }
-        self.schema.links[0]['href'] = '/apps/{name}/log/{lines}'
-        app = Resource(url="appurl.com",
-                       data=data,
-                       schema=self.schema)
-
-        app.log(lines=10, source="app")
-        url = '/apps/repos/log/10?source=app'
-        get.assert_called_with(
-            url=url,
-            headers={'content-type': 'application/json'},
-            timeout=30
-        )
-
-    @patch('pluct.request.from_response')
-    @patch("requests.get")
-    def test_extra_parameters_timeout_uri(self, get, resource_from_response):
-        data = {
-            u'name': u'repos',
-            u'platform': u'repos',
-        }
-        self.schema.links[0]['href'] = '/apps/{name}/log/{lines}'
-        app = Resource(url="appurl.com",
-                       data=data,
-                       schema=self.schema,
-                       timeout=10)
-
-        app.log(lines=10, source="app")
-        url = '/apps/repos/log/10?source=app'
-        get.assert_called_with(
-            url=url,
-            headers={'content-type': 'application/json'},
-            timeout=10
-        )
-
-    @patch('pluct.request.from_response')
-    @patch("requests.get")
-    def test_extra_parameters_uri_name_bug(self, get, resource_from_response):
-        # regression for #12.
-        data = {'platform': 'xpto'}
-        link = {
-            "href": "http://example.org/{context_name}",
-            "method": "GET",
-            "rel": "example"
-        }
-        self.schema.links.append(link)
-        app = Resource(url="appurl.com",
-                       data=data,
-                       schema=self.schema)
-
-        app.example(context_name='context', name='value1')
-        url = 'http://example.org/context?name=value1'
-        get.assert_called_with(
-            url=url,
-            headers={'content-type': 'application/json'},
-            timeout=30
-        )
-
 
 class ParseResourceTestCase(TestCase):
 
     def setUp(self):
-        raw_schema = {
+        self.item_schema = {
+            'type': 'object',
+            'properties': {
+                'id': {
+                    'type': 'integer'
+                }
+            },
+            'links': [{
+                "href": "http://localhost/foos/{id}/",
+                "method": "GET",
+                "rel": "item",
+            }]
+        }
+
+        self.raw_schema = {
             'title': "title",
             'type': "object",
 
             'properties': {
                 u'objects': {
                     u'type': u'array',
-                    u'items': {
-                        'type': 'object',
-                        'properties': {
-                            'id': {
-                                'type': 'integer'
-                            }
-                        },
-                        'links': [{
-                            "href": "http://localhost/foos/{id}/",
-                            "method": "GET",
-                            "rel": "item",
-                        }]
-                    }
+                    u'items': self.item_schema,
                 },
                 u'values': {
                     u'type': u'array'
                 }
             }
         }
-        self.schema = schema.Schema(url="url.com", raw_schema=raw_schema)
+        self.schema = schema.Schema(url="url.com", raw_schema=self.raw_schema)
 
-    @patch("requests.get")
-    def test_wraps_array_objects_as_resources(self, get):
+    def test_wraps_array_objects_as_resources(self):
         data = {
             'objects': [
-                {'id': 1}
+                {'id': 111}
             ]
         }
         app = Resource(url="appurl.com", data=data, schema=self.schema)
-        app.data['objects'][0].item()
-        url = 'http://localhost/foos/1/'
+        item = app.data['objects'][0]
 
-        get.assert_called_with(
-            url=url, headers={'content-type': 'application/json'}, timeout=30)
+        self.assertIsInstance(item, Resource)
+        self.assertEqual(item.data['id'], 111)
+        self.assertEqual(item.schema._raw_schema, self.item_schema)
 
     def test_wraps_array_objects_as_resources_even_without_items_key(self):
         data = {
