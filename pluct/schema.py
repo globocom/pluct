@@ -16,9 +16,6 @@ class Schema(IterableUserDict):
     def raw_schema(self):
         return self.data
 
-    @classmethod
-    def from_response(cls, response):
-        return cls(response.url, raw_schema=response.json())
 
 
 def get_profile_from_header(headers):
