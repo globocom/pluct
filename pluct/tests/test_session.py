@@ -81,9 +81,11 @@ class SessionResourceTestCase(TestCase):
     def test_creates_resource_from_response(self):
         with patch('pluct.resource.Resource.from_response') as from_response:
             self.session.resource('/')
-            from_response.assert_called_with(response=self.response)
+            from_response.assert_called_with(
+                response=self.response, session=self.session)
 
     def test_creates_schema_from_response(self):
         with patch('pluct.session.Schema') as Schema:
             self.session.schema('/')
-            Schema.assert_called_with('/', raw_schema=self.response.json())
+            Schema.assert_called_with(
+                '/', raw_schema=self.response.json(), session=self.session)

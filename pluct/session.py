@@ -18,11 +18,11 @@ class Session(object):
 
     def resource(self, url, *args, **kwargs):
         response = self.request('get', url, *args, **kwargs)
-        return Resource.from_response(response=response)
+        return Resource.from_response(response=response, session=self)
 
     def schema(self, url, *args, **kwargs):
         data = self.request('get', url, *args, **kwargs).json()
-        return Schema(url, raw_schema=data)
+        return Schema(url, raw_schema=data, session=self)
 
     def request(self, method, url, *args, **kwargs):
         if self.timeout is not None:
