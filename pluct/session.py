@@ -4,6 +4,7 @@ from requests import Session as RequestsSession
 
 from pluct.request import from_response
 from pluct.resource import Resource
+from pluct.schema import Schema
 
 
 class Session(object):
@@ -20,6 +21,10 @@ class Session(object):
         response = self.request('get', url, *args, **kwargs)
         return from_response(
             klass=Resource, response=response)
+
+    def schema(self, url, *args, **kwargs):
+        data = self.request('get', url, *args, **kwargs).json()
+        return Schema(url, data=data)
 
     def request(self, method, url, *args, **kwargs):
         if self.timeout is not None:
