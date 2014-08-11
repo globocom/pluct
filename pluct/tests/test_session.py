@@ -69,7 +69,13 @@ class SessionRequestsTestCase(TestCase):
 class SessionResourceTestCase(TestCase):
 
     def setUp(self):
+        self.schema_url = '/schema'
+
         self.response = Mock()
+        self.response.headers = {
+            'content-type': 'application/json; profile=%s' % self.schema_url
+        }
+
         self.session = Session()
 
         patch.object(self.session, 'request').start()
@@ -78,14 +84,21 @@ class SessionResourceTestCase(TestCase):
     def tearDown(self):
         patch.stopall()
 
-    def test_creates_resource_from_response(self):
-        with patch('pluct.resource.Resource.from_response') as from_response:
-            self.session.resource('/')
-            from_response.assert_called_with(
-                response=self.response, session=self.session)
+    @patch('pluct.session.Resource.from_response')
+    @patch('pluct.session.LazySchema')
+    def test_creates_resource_from_response(self, LazySchema, from_response):
+        LazySchema.return_value = 'fake schema'
 
-    def test_creates_schema_from_response(self):
-        with patch('pluct.session.Schema') as Schema:
-            self.session.schema('/')
-            Schema.assert_called_with(
-                '/', raw_schema=self.response.json(), session=self.session)
+        self.session.resource('/')
+
+        LazySchema.assert_called_with(
+            url=self.schema_url, session=self.session)
+
+        from_response.assert_called_with(
+            response=self.response, session=self.session, schema='fake schema')
+
+    @patch('pluct.session.Schema')
+    def test_creates_schema_from_response(self, Schema):
+        self.session.schema('/')
+        Schema.assert_called_with(
+            '/', raw_schema=self.response.json(), session=self.session)

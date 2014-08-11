@@ -3,7 +3,7 @@
 from requests import Session as RequestsSession
 
 from pluct.resource import Resource
-from pluct.schema import Schema
+from pluct.schema import Schema, LazySchema, get_profile_from_header
 
 
 class Session(object):
@@ -18,7 +18,11 @@ class Session(object):
 
     def resource(self, url, *args, **kwargs):
         response = self.request('get', url, *args, **kwargs)
-        return Resource.from_response(response=response, session=self)
+        schema_url = get_profile_from_header(response.headers)
+        schema = LazySchema(url=schema_url, session=self)
+
+        return Resource.from_response(
+            response=response, session=self, schema=schema)
 
     def schema(self, url, *args, **kwargs):
         data = self.request('get', url, *args, **kwargs).json()
