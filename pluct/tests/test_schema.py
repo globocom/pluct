@@ -2,12 +2,16 @@
 
 from unittest import TestCase
 
-from pluct import schema
+from mock import Mock, patch
+
+from pluct.schema import get_profile_from_header, LazySchema, Schema
+from pluct.session import Session
 
 
 class SchemaTestCase(TestCase):
 
     def setUp(self):
+        self.session = Session()
         self.data = {
             "title": "app schema",
             "properties": {
@@ -32,7 +36,8 @@ class SchemaTestCase(TestCase):
         }
 
         self.url = "http://app.com/myschema"
-        self.schema = schema.Schema(self.url, raw_schema=self.data)
+        self.schema = Schema(
+            self.url, raw_schema=self.data, session=self.session)
 
     def test_schema_required(self):
         self.assertListEqual(self.data["required"], self.schema['required'])
@@ -49,17 +54,42 @@ class SchemaTestCase(TestCase):
     def test_schema_url(self):
         self.assertEqual(self.url, self.schema.url)
 
-    def test_links_should_not_be_setted_by_default(self):
-        s = schema.Schema(url="")
-        self.assertFalse(hasattr(s, "links"))
+    def test_session(self):
+        self.assertIs(self.session, self.schema.session)
 
-    def test_properties_should_not_be_setted_by_default(self):
-        s = schema.Schema(url="")
-        self.assertFalse(hasattr(s, "properties"))
 
-    def test_required_should_not_be_setted_by_default(self):
-        s = schema.Schema(url="")
-        self.assertFalse(hasattr(s, "required"))
+class LazySchemaTestCase(TestCase):
+
+    def run(self, *args, **kwargs):
+        self.session = Session()
+        self.schema = LazySchema('/schema', session=self.session)
+
+        with patch.object(self.session, 'request') as request:
+            self.data = {'fake': 'schema'}
+            self.response = Mock()
+            self.response.json.return_value = self.data
+            self.request = request
+            request.return_value = self.response
+
+            return super(LazySchemaTestCase, self).run(*args, **kwargs)
+
+    def test_loads_schema_once_accessing_data(self):
+        self.assertEqual(self.schema.data, self.data)
+        self.assertEqual(self.schema.data, self.data)
+
+        self.request.assert_called_once_with('get', '/schema')
+
+    def test_loads_schema_once_accessing_raw_schema(self):
+        self.assertEqual(self.schema.raw_schema, self.data)
+        self.assertEqual(self.schema.raw_schema, self.data)
+
+        self.request.assert_called_once_with('get', '/schema')
+
+    def test_url(self):
+        self.assertEqual(self.schema.url, '/schema')
+
+    def test_session(self):
+        self.assertIs(self.session, self.schema.session)
 
 
 class GetProfileFromHeaderTestCase(TestCase):
@@ -68,12 +98,12 @@ class GetProfileFromHeaderTestCase(TestCase):
 
     def test_return_none_for_missing_content_type(self):
         headers = {}
-        url = schema.get_profile_from_header(headers)
+        url = get_profile_from_header(headers)
         self.assertIs(url, None)
 
     def test_return_none_for_missing_profile(self):
         headers = {'content-type': 'application/json'}
-        url = schema.get_profile_from_header(headers)
+        url = get_profile_from_header(headers)
         self.assertIs(url, None)
 
     def test_should_read_schema_from_profile(self):
@@ -82,7 +112,7 @@ class GetProfileFromHeaderTestCase(TestCase):
                 'application/json; charset=utf-8; profile=%s'
                 % self.SCHEMA_URL)
         }
-        url = schema.get_profile_from_header(headers)
+        url = get_profile_from_header(headers)
         self.assertEqual(url, self.SCHEMA_URL)
 
     def test_should_parse_schema_from_quoted_profile(self):
@@ -91,5 +121,5 @@ class GetProfileFromHeaderTestCase(TestCase):
                 'application/json; charset=utf-8; profile="%s"'
                 % self.SCHEMA_URL)
         }
-        url = schema.get_profile_from_header(headers)
+        url = get_profile_from_header(headers)
         self.assertEqual(url, self.SCHEMA_URL)

@@ -8,14 +8,31 @@ from pluct.datastructures import IterableUserDict
 
 class Schema(IterableUserDict):
 
-    def __init__(self, url, raw_schema=None):
+    def __init__(self, url, raw_schema=None, session=None):
         self.url = url
         self.data = raw_schema
+        self.session = session
 
     @property
     def raw_schema(self):
         return self.data
 
+
+class LazySchema(Schema):
+
+    def __init__(self, url, session=None):
+        self.url = url
+        self.session = session
+        self._data = None
+
+    @property
+    def data(self):
+        if self._data is None:
+            response = self.session.request('get', self.url)
+            data = response.json()
+            self._data = data
+
+        return self._data
 
 
 def get_profile_from_header(headers):

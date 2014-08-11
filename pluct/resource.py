@@ -12,10 +12,12 @@ class Resource(IterableUserDict):
 
     def __init__(self, url, data=None, schema=None,
                  response=None, session=None):
+
         self.url = url
         self.data = data
         self.schema = schema
         self.response = response
+
         if self.schema and self.is_valid():
             self.parse_data()
 
