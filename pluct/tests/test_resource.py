@@ -1,20 +1,16 @@
 # -*- coding: utf-8 -*-
 
 
-from requests import Response
-
 from unittest import TestCase
 from mock import patch, Mock
 
-from pluct import resource, schema
+from pluct import schema
 from pluct.resource import Resource
 
 
 class ResourceTestCase(TestCase):
 
-    @patch("pluct.schema.get")
-    @patch("requests.get")
-    def setUp(self, mock_get, mock_schema_get):
+    def setUp(self):
         self.data = {
             "name": "repos",
             "platform": "js",
@@ -40,16 +36,11 @@ class ResourceTestCase(TestCase):
                 }
             ]}
         self.schema = schema.Schema(url="url.com", raw_schema=raw_schema)
-        mock_schema_get.return_value = self.schema
-        self.headers = {
-            'content-type': 'application/json; profile=url.com'
-        }
-        mock = Mock(headers=self.headers)
-        mock.json.return_value = self.data
-        mock_get.return_value = mock
+
         self.url = "http://app.com/content"
-        self.result = resource.get(url=self.url)
-        mock_schema_get.assert_called_with("url.com")
+
+        self.result = Resource(
+            url=self.url, data=self.data, schema=self.schema)
 
     def test_get_should_returns_a_resource(self):
         self.assertIsInstance(self.result, Resource)
@@ -79,17 +70,11 @@ class ResourceTestCase(TestCase):
         finally:
             self.result.schema.required = old
 
-    @patch("pluct.schema.from_header")
-    @patch("requests.get")
-    def test_is_valid_invalid(self, get, from_header):
-        from_header.return_value = self.schema
+    def test_is_valid_invalid(self):
         data = {
             u'doestnotexists': u'repos',
         }
-        mock = Mock(headers={})
-        mock.json.return_value = data
-        get.return_value = mock
-        result = resource.get(url="appurl.com")
+        result = Resource('/url', data=data, schema=self.schema)
         self.assertFalse(result.is_valid())
 
     def test_is_valid(self):
@@ -173,35 +158,25 @@ class ParseResourceTestCase(TestCase):
 class FromResponseTestCase(TestCase):
 
     def setUp(self):
-        self._response = Response()
+        self._response = Mock()
         self._response.url = 'http://example.com'
+
         content_type = 'application/json; profile=http://example.com/schema'
         self._response.headers = {
             'content-type': content_type
         }
 
-    @patch('pluct.schema.from_header')
-    def test_should_return_resource_from_response(self, from_header):
-        self._response.json = Mock(return_value={})
-        self._response.status_code = 200
-        returned_resource = Resource.from_response(self._response)
-        self.assertEqual(returned_resource.url, 'http://example.com')
-        self.assertEqual(returned_resource.data, {})
-        self.assertEqual(returned_resource.response.status_code, 200)
-
-    @patch('pluct.schema.from_header')
-    def test_should_return_resource_from_response_with_no_json_data(
-            self, from_header):
-        self._response.json = Mock(side_effect=ValueError())
+    def test_should_return_resource_from_response(self):
+        self._response.json.return_value = {}
         returned_resource = Resource.from_response(self._response)
         self.assertEqual(returned_resource.url, 'http://example.com')
         self.assertEqual(returned_resource.data, {})
 
-    @patch('pluct.schema.from_header')
-    def test_should_obtain_schema_from_header(self, from_header):
+    def test_should_return_resource_from_response_with_no_json_data(self):
         self._response.json = Mock(side_effect=ValueError())
-        Resource.from_response(self._response)
-        from_header.assert_called_with(self._response.headers)
+        returned_resource = Resource.from_response(self._response)
+        self.assertEqual(returned_resource.url, 'http://example.com')
+        self.assertEqual(returned_resource.data, {})
 
     def test_resource_with_an_array_without_schema(self):
         data = {

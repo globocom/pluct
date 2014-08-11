@@ -1,11 +1,13 @@
+# -*- coding: utf-8 -*-
+
 from unittest import TestCase
-from mock import patch, Mock, ANY
+
 from pluct import schema
 
 
 class SchemaTestCase(TestCase):
-    @patch("requests.get")
-    def setUp(self, get):
+
+    def setUp(self):
         self.data = {
             "title": "app schema",
             "properties": {
@@ -28,15 +30,9 @@ class SchemaTestCase(TestCase):
             ],
             "required": ["platform", "name"],
         }
-        mock = Mock()
-        get.return_value = mock
-        mock.json.return_value = self.data
 
         self.url = "http://app.com/myschema"
-        self.result = schema.get(url=self.url)
-
-    def test_get_should_returns_a_schema(self):
-        self.assertIsInstance(self.result, schema.Schema)
+        self.result = schema.Schema(self.url, raw_schema=self.data)
 
     def test_schema_required(self):
         self.assertListEqual(self.data["required"], self.result.required)
@@ -66,28 +62,34 @@ class SchemaTestCase(TestCase):
         self.assertFalse(hasattr(s, "required"))
 
 
-class FromHeaderTestCase(TestCase):
+class GetProfileFromHeaderTestCase(TestCase):
 
     SCHEMA_URL = 'http://a.com/schema'
 
-    @patch("requests.get")
-    def test_should_read_schema_from_profile(self, get):
+    def test_return_none_for_missing_content_type(self):
+        headers = {}
+        url = schema.get_profile_from_header(headers)
+        self.assertIs(url, None)
+
+    def test_return_none_for_missing_profile(self):
+        headers = {'content-type': 'application/json'}
+        url = schema.get_profile_from_header(headers)
+        self.assertIs(url, None)
+
+    def test_should_read_schema_from_profile(self):
         headers = {
             'content-type': (
                 'application/json; charset=utf-8; profile=%s'
                 % self.SCHEMA_URL)
         }
-        schema.from_header(headers)
+        url = schema.get_profile_from_header(headers)
+        self.assertEqual(url, self.SCHEMA_URL)
 
-        get.assert_called_with(self.SCHEMA_URL, headers=ANY)
-
-    @patch("requests.get")
-    def test_should_parse_schema_from_quoted_profile(self, get):
+    def test_should_parse_schema_from_quoted_profile(self):
         headers = {
             'content-type': (
                 'application/json; charset=utf-8; profile="%s"'
                 % self.SCHEMA_URL)
         }
-        schema.from_header(headers)
-
-        get.assert_called_with(self.SCHEMA_URL, headers=ANY)
+        url = schema.get_profile_from_header(headers)
+        self.assertEqual(url, self.SCHEMA_URL)

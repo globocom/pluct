@@ -22,7 +22,7 @@ class Session(object):
 
     def schema(self, url, *args, **kwargs):
         data = self.request('get', url, *args, **kwargs).json()
-        return Schema(url, data=data)
+        return Schema(url, raw_schema=data)
 
     def request(self, method, url, *args, **kwargs):
         if self.timeout is not None:

@@ -2,7 +2,6 @@
 
 
 from cgi import parse_header
-import requests
 
 
 class AttrDict(dict):
@@ -40,16 +39,12 @@ class Schema(object):
     def __getitem__(self, item):
         return dict.__getitem__(self._raw_schema, item)
 
-
-def get(url):
-    headers = {
-        'content-type': 'application/json'
-    }
-    data = requests.get(url, headers=headers).json()
-    return Schema(url, data)
+    @classmethod
+    def from_response(cls, response):
+        return cls(response.url, raw_schema=response.json())
 
 
-def from_header(headers):
+def get_profile_from_header(headers):
     if 'content-type' not in headers:
         return None
 
@@ -60,4 +55,4 @@ def from_header(headers):
         return None
 
     schema_url = parameters['profile']
-    return get(schema_url)
+    return schema_url

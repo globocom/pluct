@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import requests
 import uritemplate
 from jsonschema import SchemaError, validate, ValidationError
 
@@ -112,11 +111,5 @@ class Resource(dict):
         return cls(
             url=response.url,
             data=data,
-            schema=schema.from_header(response.headers),
             response=response
         )
-
-
-def get(url, *args, **kwargs):
-    response = requests.get(url, *args, **kwargs)
-    return Resource.from_response(response)
