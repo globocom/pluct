@@ -8,7 +8,6 @@ from mock import patch, Mock
 
 from pluct import resource, schema
 from pluct.resource import Resource
-from pluct.request import from_response
 
 
 class ResourceTestCase(TestCase):
@@ -185,7 +184,7 @@ class FromResponseTestCase(TestCase):
     def test_should_return_resource_from_response(self, from_header):
         self._response.json = Mock(return_value={})
         self._response.status_code = 200
-        returned_resource = from_response(Resource, self._response)
+        returned_resource = Resource.from_response(self._response)
         self.assertEqual(returned_resource.url, 'http://example.com')
         self.assertEqual(returned_resource.data, {})
         self.assertEqual(returned_resource.response.status_code, 200)
@@ -194,14 +193,14 @@ class FromResponseTestCase(TestCase):
     def test_should_return_resource_from_response_with_no_json_data(
             self, from_header):
         self._response.json = Mock(side_effect=ValueError())
-        returned_resource = from_response(Resource, self._response)
+        returned_resource = Resource.from_response(self._response)
         self.assertEqual(returned_resource.url, 'http://example.com')
         self.assertEqual(returned_resource.data, {})
 
     @patch('pluct.schema.from_header')
     def test_should_obtain_schema_from_header(self, from_header):
         self._response.json = Mock(side_effect=ValueError())
-        from_response(Resource, self._response)
+        Resource.from_response(self._response)
         from_header.assert_called_with(self._response.headers)
 
     def test_resource_with_an_array_without_schema(self):

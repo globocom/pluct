@@ -5,7 +5,6 @@ from unittest import TestCase
 from mock import ANY, Mock, patch
 
 from pluct.session import Session
-from pluct.resource import Resource
 
 
 class SessionInitializationTestCase(TestCase):
@@ -80,10 +79,9 @@ class SessionResourceTestCase(TestCase):
         patch.stopall()
 
     def test_creates_resource_from_response(self):
-        with patch('pluct.session.from_response') as from_response:
+        with patch('pluct.resource.Resource.from_response') as from_response:
             self.session.resource('/')
-            from_response.assert_called_with(
-                klass=Resource, response=self.response)
+            from_response.assert_called_with(response=self.response)
 
     def test_creates_schema_from_response(self):
         with patch('pluct.session.Schema') as Schema:

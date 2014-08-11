@@ -2,7 +2,6 @@
 
 from requests import Session as RequestsSession
 
-from pluct.request import from_response
 from pluct.resource import Resource
 from pluct.schema import Schema
 
@@ -19,8 +18,7 @@ class Session(object):
 
     def resource(self, url, *args, **kwargs):
         response = self.request('get', url, *args, **kwargs)
-        return from_response(
-            klass=Resource, response=response)
+        return Resource.from_response(response=response)
 
     def schema(self, url, *args, **kwargs):
         data = self.request('get', url, *args, **kwargs).json()

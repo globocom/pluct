@@ -6,7 +6,6 @@ from jsonschema import SchemaError, validate, ValidationError
 
 from pluct import schema
 from pluct.schema import Schema
-from request import from_response
 
 
 class Resource(dict):
@@ -104,7 +103,20 @@ class Resource(dict):
                 return link
         return None
 
+    @classmethod
+    def from_response(cls, response):
+        try:
+            data = response.json()
+        except ValueError:
+            data = {}
+        return cls(
+            url=response.url,
+            data=data,
+            schema=schema.from_header(response.headers),
+            response=response
+        )
+
 
 def get(url, *args, **kwargs):
     response = requests.get(url, *args, **kwargs)
-    return from_response(Resource, response)
+    return Resource.from_response(response)
