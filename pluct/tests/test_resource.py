@@ -63,9 +63,9 @@ class ResourceTestCase(TestCase):
         self.assertEqual(self.schema.url, self.result.schema.url)
 
     def test_is_valid_schema_error(self):
-        old = self.result.schema.required
+        old = self.result.schema['required']
         try:
-            self.result.schema.required = ["ble"]
+            self.result.schema['required'] = ["ble"]
             self.assertFalse(self.result.is_valid())
         finally:
             self.result.schema.required = old
@@ -125,7 +125,7 @@ class ParseResourceTestCase(TestCase):
 
         self.assertIsInstance(item, Resource)
         self.assertEqual(item.data['id'], 111)
-        self.assertEqual(item.schema._raw_schema, self.item_schema)
+        self.assertEqual(item.schema.raw_schema, self.item_schema)
 
     def test_wraps_array_objects_as_resources_even_without_items_key(self):
         data = {

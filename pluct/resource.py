@@ -4,10 +4,11 @@ import uritemplate
 from jsonschema import SchemaError, validate, ValidationError
 
 from pluct import schema
+from pluct.datastructures import IterableUserDict
 from pluct.schema import Schema
 
 
-class Resource(dict):
+class Resource(IterableUserDict):
 
     def __init__(self, url, data=None, schema=None,
                  response=None, session=None):
@@ -20,23 +21,9 @@ class Resource(dict):
 
         self.session = session
 
-    def __str__(self):
-        return str(self.data)
-
-    def __iter__(self):
-        return iter(self.data)
-
-    def __getitem__(self, attr):
-        if attr in self.data:
-            return self.data[attr]
-        raise KeyError
-
-    def __contains__(self, item):
-        return dict.__contains__(self.data, item)
-
     def is_valid(self):
         try:
-            validate(self.data, self.schema._raw_schema)
+            validate(self.data, self.schema.raw_schema)
         except (SchemaError, ValidationError):
             return False
         return True
@@ -49,7 +36,7 @@ class Resource(dict):
             if not isinstance(value, list):
                 continue
 
-            item_schema = self.schema.properties.get(key, {})
+            item_schema = self.schema['properties'].get(key, {})
             is_array = item_schema.get('type') == 'array'
 
             if not is_array:
@@ -97,7 +84,8 @@ class Resource(dict):
         return self.session.request(method, uri, **kwargs)
 
     def get_rel(self, name):
-        for link in getattr(self.schema, "links", []) or []:
+        links = self.schema.get('links') or []
+        for link in links:
             if link.get('rel') == name:
                 return link
         return None

@@ -32,22 +32,22 @@ class SchemaTestCase(TestCase):
         }
 
         self.url = "http://app.com/myschema"
-        self.result = schema.Schema(self.url, raw_schema=self.data)
+        self.schema = schema.Schema(self.url, raw_schema=self.data)
 
     def test_schema_required(self):
-        self.assertListEqual(self.data["required"], self.result.required)
+        self.assertListEqual(self.data["required"], self.schema['required'])
 
     def test_schema_title(self):
-        self.assertEqual(self.data["title"], self.result.title)
+        self.assertEqual(self.data["title"], self.schema['title'])
 
     def test_schema_properties(self):
-        self.assertDictEqual(self.data["properties"], self.result.properties)
+        self.assertEqual(self.data['properties'], self.schema['properties'])
 
     def test_schema_links(self):
-        self.assertListEqual(self.data["links"], self.result.links)
+        self.assertListEqual(self.data["links"], self.schema['links'])
 
     def test_schema_url(self):
-        self.assertEqual(self.url, self.result.url)
+        self.assertEqual(self.url, self.schema.url)
 
     def test_links_should_not_be_setted_by_default(self):
         s = schema.Schema(url="")
