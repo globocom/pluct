@@ -86,4 +86,4 @@ class SessionResourceTestCase(TestCase):
     def test_creates_schema_from_response(self):
         with patch('pluct.session.Schema') as Schema:
             self.session.schema('/')
-            Schema.assert_called_with('/', data=self.response.json())
+            Schema.assert_called_with('/', raw_schema=self.response.json())
