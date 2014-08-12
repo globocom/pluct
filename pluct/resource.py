@@ -9,13 +9,10 @@ from pluct.schema import Schema, LazySchema
 
 class Resource(IterableUserDict):
 
-    def __init__(self, url, data=None, schema=None,
-                 response=None, session=None):
-
+    def __init__(self, url, data=None, schema=None, session=None):
         self.url = url
         self.data = data
         self.schema = schema
-        self.response = response
         self.session = session
 
         if self.schema and self.is_valid():
@@ -92,7 +89,7 @@ class Resource(IterableUserDict):
         return None
 
     @classmethod
-    def from_response(cls, response):
+    def from_response(cls, response, session):
         try:
             data = response.json()
         except ValueError:
@@ -100,5 +97,5 @@ class Resource(IterableUserDict):
         return cls(
             url=response.url,
             data=data,
-            response=response
+            session=session,
         )

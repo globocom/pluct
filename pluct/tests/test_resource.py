@@ -209,16 +209,19 @@ class FromResponseTestCase(TestCase):
         self._response.headers = {
             'content-type': content_type
         }
+        self.session = Session()
 
     def test_should_return_resource_from_response(self):
         self._response.json.return_value = {}
-        returned_resource = Resource.from_response(self._response)
+        returned_resource = Resource.from_response(
+            self._response, session=self.session)
         self.assertEqual(returned_resource.url, 'http://example.com')
         self.assertEqual(returned_resource.data, {})
 
     def test_should_return_resource_from_response_with_no_json_data(self):
         self._response.json = Mock(side_effect=ValueError())
-        returned_resource = Resource.from_response(self._response)
+        returned_resource = Resource.from_response(
+            self._response, session=self.session)
         self.assertEqual(returned_resource.url, 'http://example.com')
         self.assertEqual(returned_resource.data, {})
 
