@@ -3,9 +3,8 @@
 import uritemplate
 from jsonschema import SchemaError, validate, ValidationError
 
-from pluct import schema
 from pluct.datastructures import IterableUserDict
-from pluct.schema import Schema
+from pluct.schema import Schema, LazySchema
 
 
 class Resource(IterableUserDict):
@@ -17,11 +16,10 @@ class Resource(IterableUserDict):
         self.data = data
         self.schema = schema
         self.response = response
+        self.session = session
 
         if self.schema and self.is_valid():
             self.parse_data()
-
-        self.session = session
 
     def is_valid(self):
         try:
@@ -48,9 +46,9 @@ class Resource(IterableUserDict):
             prop_items = item_schema.get('items', {})
 
             if "$ref" in prop_items:
-                s = schema.get(prop_items['$ref'])
+                s = LazySchema(prop_items['$ref'], session=self.session)
             else:
-                s = Schema(self.url, prop_items)
+                s = Schema(self.url, prop_items, session=self.session)
 
             for item in value:
                 if not isinstance(item, dict):
@@ -62,6 +60,7 @@ class Resource(IterableUserDict):
                         self.url,
                         data=item,
                         schema=s,
+                        session=self.session,
                     )
                 )
 

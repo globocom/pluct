@@ -6,6 +6,7 @@ from mock import patch, Mock
 
 from pluct import schema
 from pluct.resource import Resource
+from pluct.session import Session
 
 
 class ResourceTestCase(TestCase):
@@ -153,6 +154,49 @@ class ParseResourceTestCase(TestCase):
         values = resource_list['values']
 
         self.assertEqual(values, data['values'])
+
+
+class ParseResourceWithExternalSchemaTestCase(TestCase):
+
+    def setUp(self):
+        self.item_schema_url = 'http://appurl.com/schema'
+        self.raw_schema = {
+            'title': "title",
+            'type': "object",
+
+            'properties': {
+                'objects': {
+                    'type': 'array',
+                    'items': {
+                        '$ref': self.item_schema_url
+                    }
+                }
+            }
+        }
+        self.schema = schema.Schema(url="url.com", raw_schema=self.raw_schema)
+        self.session = Session()
+
+    def test_assigns_lazy_schema_to_array_resources_with_external_schema(self):
+        item_schema = Mock()
+        with patch('pluct.resource.validate'):
+            with patch('pluct.resource.LazySchema') as LazySchema:
+                LazySchema.return_value = item_schema
+
+                data = {
+                    'objects': [
+                        {'id': 111}
+                    ]
+                }
+
+                resource = Resource(
+                    url="appurl.com", data=data, schema=self.schema,
+                    session=self.session)
+
+                item = resource.data['objects'][0]
+
+                LazySchema.assert_called_with(
+                    self.item_schema_url, session=self.session)
+                self.assertEqual(item.schema, item_schema)
 
 
 class FromResponseTestCase(TestCase):
