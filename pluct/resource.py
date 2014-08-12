@@ -95,8 +95,7 @@ class Resource(object):
             url, data=data, schema=schema, session=session)
 
     @classmethod
-    def from_response(cls, response, session):
-        # TODO: session should pass schema here
+    def from_response(cls, response, session, schema):
         try:
             data = response.json()
         except ValueError:
@@ -105,6 +104,7 @@ class Resource(object):
             url=response.url,
             data=data,
             session=session,
+            schema=schema
         )
 
 

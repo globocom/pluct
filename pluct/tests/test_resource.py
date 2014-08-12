@@ -7,6 +7,7 @@ from mock import patch, Mock
 from pluct import schema
 from pluct.resource import Resource, ObjectResource, ArrayResource
 from pluct.session import Session
+from pluct.schema import Schema
 
 
 class ResourceTestCase(TestCase):
@@ -212,18 +213,19 @@ class FromResponseTestCase(TestCase):
             'content-type': content_type
         }
         self.session = Session()
+        self.schema = Schema('/', raw_schema={})
 
     def test_should_return_resource_from_response(self):
         self._response.json.return_value = {}
         returned_resource = Resource.from_response(
-            self._response, session=self.session)
+            self._response, session=self.session, schema=self.schema)
         self.assertEqual(returned_resource.url, 'http://example.com')
         self.assertEqual(returned_resource.data, {})
 
     def test_should_return_resource_from_response_with_no_json_data(self):
         self._response.json = Mock(side_effect=ValueError())
         returned_resource = Resource.from_response(
-            self._response, session=self.session)
+            self._response, session=self.session, schema=self.schema)
         self.assertEqual(returned_resource.url, 'http://example.com')
         self.assertEqual(returned_resource.data, {})
 
