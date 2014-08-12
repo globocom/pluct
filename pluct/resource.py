@@ -96,6 +96,7 @@ class Resource(object):
 
     @classmethod
     def from_response(cls, response, session):
+        # TODO: session should pass schema here
         try:
             data = response.json()
         except ValueError:

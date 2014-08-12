@@ -5,7 +5,7 @@ from unittest import TestCase
 from mock import patch, Mock
 
 from pluct import schema
-from pluct.resource import Resource
+from pluct.resource import Resource, ObjectResource, ArrayResource
 from pluct.session import Session
 
 
@@ -244,3 +244,20 @@ class FromResponseTestCase(TestCase):
             })
         response = Resource.from_data("url", data, s)
         self.assertDictEqual(data, response.data)
+
+
+class ResourceFromDataTestCase(TestCase):
+
+    def test_should_create_array_resource_from_list(self):
+        data = []
+        resource = Resource.from_data('/', data=data)
+        self.assertIsInstance(resource, ArrayResource)
+        self.assertEqual(resource.url, '/')
+        self.assertEqual(resource.data, data)
+
+    def test_should_create_object_resource_from_dict(self):
+        data = {}
+        resource = Resource.from_data('/', data=data)
+        self.assertIsInstance(resource, ObjectResource)
+        self.assertEqual(resource.url, '/')
+        self.assertEqual(resource.data, data)
