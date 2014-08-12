@@ -8,8 +8,10 @@ from pluct.datastructures import IterableUserDict
 
 class Schema(IterableUserDict):
 
-    def __init__(self, url, raw_schema=None, session=None):
-        self.url = url
+    def __init__(self, href, raw_schema=None, session=None):
+        self.href = href
+        self.url = href
+
         self.data = raw_schema
         self.session = session
 

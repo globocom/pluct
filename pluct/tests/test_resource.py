@@ -37,7 +37,7 @@ class ResourceTestCase(TestCase):
                     "rel": "env"
                 }
             ]}
-        self.schema = schema.Schema(url="url.com", raw_schema=raw_schema)
+        self.schema = schema.Schema(href="url.com", raw_schema=raw_schema)
 
         self.url = "http://app.com/content"
 
@@ -114,7 +114,7 @@ class ParseResourceTestCase(TestCase):
                 }
             }
         }
-        self.schema = schema.Schema(url="url.com", raw_schema=self.raw_schema)
+        self.schema = schema.Schema(href="url.com", raw_schema=self.raw_schema)
 
     def test_wraps_array_objects_as_resources(self):
         data = {
@@ -176,7 +176,7 @@ class ParseResourceWithExternalSchemaTestCase(TestCase):
                 }
             }
         }
-        self.schema = schema.Schema(url="url.com", raw_schema=self.raw_schema)
+        self.schema = schema.Schema(href="url.com", raw_schema=self.raw_schema)
         self.session = Session()
 
     def test_assigns_lazy_schema_to_array_resources_with_external_schema(self):
@@ -237,7 +237,7 @@ class FromResponseTestCase(TestCase):
             u'name': u'registry',
         }
         s = schema.Schema(
-            url='url',
+            href='url',
             raw_schema={
                 'title': 'app schema',
                 'type': 'object',
