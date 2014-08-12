@@ -17,6 +17,13 @@ class Schema(IterableUserDict):
     def raw_schema(self):
         return self.data
 
+    def get_link(self, name):
+        links = self.get('links') or []
+        for link in links:
+            if link.get('rel') == name:
+                return link
+        return None
+
 
 class LazySchema(Schema):
 

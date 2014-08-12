@@ -64,7 +64,7 @@ class Resource(IterableUserDict):
             self.data[key] = data_items
 
     def rel(self, name, **kwargs):
-        link = self.get_rel(name)
+        link = self.schema.get_link(name)
         method = link.get('method', 'get')
         href = link.get('href', '')
 
@@ -80,13 +80,6 @@ class Resource(IterableUserDict):
             kwargs['params'] = unused_params
 
         return self.session.request(method, uri, **kwargs)
-
-    def get_rel(self, name):
-        links = self.schema.get('links') or []
-        for link in links:
-            if link.get('rel') == name:
-                return link
-        return None
 
     @classmethod
     def from_response(cls, response, session):

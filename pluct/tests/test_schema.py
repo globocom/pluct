@@ -123,3 +123,28 @@ class GetProfileFromHeaderTestCase(TestCase):
         }
         url = get_profile_from_header(headers)
         self.assertEqual(url, self.SCHEMA_URL)
+
+
+class GetLinkTestCase(TestCase):
+
+    def setUp(self):
+        self.url = '/'
+        self.data = {
+            'links': [
+                {
+                    'rel': 'create',
+                    'href': '/api/content',
+                }
+            ]
+        }
+        self.session = Session()
+        self.schema = Schema(
+            self.url, raw_schema=self.data, session=self.session)
+
+    def test_returns_link_by_rel(self):
+        link = self.schema.get_link('create')
+        self.assertEqual(link, self.data['links'][0])
+
+    def test_returns_none_for_missing_link(self):
+        link = self.schema.get_link('missing')
+        self.assertIs(link, None)
