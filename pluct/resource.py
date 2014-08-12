@@ -3,15 +3,19 @@
 import uritemplate
 from jsonschema import SchemaError, validate, ValidationError
 
-from pluct.datastructures import IterableUserDict
+from pluct import datastructures
 from pluct.schema import Schema, LazySchema
 
 
-class Resource(IterableUserDict):
+class Resource(object):
 
-    def __init__(self, url, data=None, schema=None, session=None):
+    def __init__(self, *args, **kwargs):
+        raise NotImplementedError(
+            'Use subclasses or Resource.from_data to initialize resources')
+
+    def init(self, url, data=None, schema=None, session=None):
         self.url = url
-        self.data = data
+        self.data = data or self.default_data()
         self.schema = schema
         self.session = session
 
@@ -53,7 +57,7 @@ class Resource(IterableUserDict):
                     continue
 
                 data_items.append(
-                    Resource(
+                    ObjectResource(
                         self.url,
                         data=item,
                         schema=s,
@@ -82,13 +86,40 @@ class Resource(IterableUserDict):
         return self.session.request(method, uri, **kwargs)
 
     @classmethod
+    def from_data(cls, url, data=None, schema=None, session=None):
+        klass = ObjectResource
+        if isinstance(data, (list, tuple)):
+            klass = ArrayResource
+
+        return klass(
+            url, data=data, schema=schema, session=session)
+
+    @classmethod
     def from_response(cls, response, session):
         try:
             data = response.json()
         except ValueError:
-            data = {}
-        return cls(
+            data = None
+        return cls.from_data(
             url=response.url,
             data=data,
             session=session,
         )
+
+
+class ObjectResource(datastructures.IterableUserDict, Resource):
+
+    def __init__(self, *args, **kwargs):
+        self.init(*args, **kwargs)
+
+    def default_data(self):
+        return {}
+
+
+class ArrayResource(datastructures.UserList, Resource):
+
+    def __init__(self, *args, **kwargs):
+        self.init(*args, **kwargs)
+
+    def default_data(self):
+        return []

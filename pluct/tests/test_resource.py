@@ -40,7 +40,7 @@ class ResourceTestCase(TestCase):
 
         self.url = "http://app.com/content"
 
-        self.result = Resource(
+        self.result = Resource.from_data(
             url=self.url, data=self.data, schema=self.schema)
 
     def test_get_should_returns_a_resource(self):
@@ -75,7 +75,7 @@ class ResourceTestCase(TestCase):
         data = {
             u'doestnotexists': u'repos',
         }
-        result = Resource('/url', data=data, schema=self.schema)
+        result = Resource.from_data('/url', data=data, schema=self.schema)
         self.assertFalse(result.is_valid())
 
     def test_is_valid(self):
@@ -121,7 +121,8 @@ class ParseResourceTestCase(TestCase):
                 {'id': 111}
             ]
         }
-        app = Resource(url="appurl.com", data=data, schema=self.schema)
+        app = Resource.from_data(
+            url="appurl.com", data=data, schema=self.schema)
         item = app.data['objects'][0]
 
         self.assertIsInstance(item, Resource)
@@ -134,7 +135,8 @@ class ParseResourceTestCase(TestCase):
                 {'id': 1}
             ]
         }
-        resource = Resource(url="appurl.com", data=data, schema=self.schema)
+        resource = Resource.from_data(
+            url="appurl.com", data=data, schema=self.schema)
 
         item = resource['values'][0]
         self.assertIsInstance(item, Resource)
@@ -149,7 +151,7 @@ class ParseResourceTestCase(TestCase):
                 ['array']
             ]
         }
-        resource_list = Resource(
+        resource_list = Resource.from_data(
             url="appurl.com", data=data, schema=self.schema)
         values = resource_list['values']
 
@@ -188,7 +190,7 @@ class ParseResourceWithExternalSchemaTestCase(TestCase):
                     ]
                 }
 
-                resource = Resource(
+                resource = Resource.from_data(
                     url="appurl.com", data=data, schema=self.schema,
                     session=self.session)
 
@@ -240,5 +242,5 @@ class FromResponseTestCase(TestCase):
                 'required': ['name'],
                 'properties': {'name': {'type': 'string'}}
             })
-        response = Resource("url", data, s)
+        response = Resource.from_data("url", data, s)
         self.assertDictEqual(data, response.data)

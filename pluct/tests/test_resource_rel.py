@@ -36,7 +36,7 @@ class ResourceRelTestCase(TestCase):
 
         self.session = Session()
         self.schema = Schema('/schema', raw_schema)
-        self.resource = Resource(
+        self.resource = Resource.from_data(
             '/', data=data, schema=self.schema, session=self.session)
 
         self.request_patcher = patch.object(self.session, 'request')
