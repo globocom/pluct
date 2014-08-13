@@ -1,30 +1,7 @@
 # -*- coding: utf-8 -*-
-import re
-from setuptools import setup, find_packages, findall
 
+from setuptools import setup, find_packages
 
-def parse_requirements(file_name):
-    requirements = []
-    for line in open(file_name, 'r').read().split('\n'):
-        if re.match(r'(\s*#)|(\s*$)', line):
-            continue
-        if re.match(r'\s*-e\s+', line):
-            requirements.append(re.sub(r'\s*-e\s+.*#egg=(.*)$', r'\1', line))
-        elif re.match(r'\s*-[fr]\s+', line):
-            pass
-        else:
-            requirements.append(line)
-    return requirements
-
-
-def not_py(file_path):
-    return not(file_path.endswith('.py') or file_path.endswith('.pyc'))
-
-core_packages = find_packages()
-core_package_data = {}
-for package in core_packages:
-    package_path = package.replace('.', '/')
-    core_package_data[package] = filter(not_py, findall(package_path))
 
 setup(
     name='pluct',
@@ -42,8 +19,11 @@ setup(
         'Programming Language :: Python :: 2.7',
     ],
     test_suite='pluct.tests',
-    packages=core_packages,
-    package_data=core_package_data,
+    packages=find_packages(exclude=('pluct.tests.*', 'pluct.tests')),
     include_package_data=True,
-    install_requires=parse_requirements('requirements.txt'),
+    install_requires=[
+        'requests',
+        'uritemplate',
+        'jsonschema',
+    ],
 )
