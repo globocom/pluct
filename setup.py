@@ -25,5 +25,6 @@ setup(
         'requests',
         'uritemplate',
         'jsonschema',
+        'jsonpointer',
     ],
 )

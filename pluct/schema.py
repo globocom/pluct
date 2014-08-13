@@ -2,6 +2,7 @@
 
 
 from cgi import parse_header
+from jsonpointer import resolve_pointer
 
 from pluct.datastructures import IterableUserDict
 
@@ -9,10 +10,9 @@ from pluct.datastructures import IterableUserDict
 class Schema(IterableUserDict):
 
     def __init__(self, href, raw_schema=None, session=None):
-        self.href = href
-        self.url = href
+        self._init_href(href)
 
-        self.data = raw_schema
+        self.data = resolve_pointer(raw_schema, self.pointer)
         self.session = session
 
     @property
@@ -26,11 +26,21 @@ class Schema(IterableUserDict):
                 return link
         return None
 
+    def _init_href(self, href):
+        parts = href.split('#', 1)
+        self.url = parts[0]
+
+        self.pointer = ''
+        if len(parts) > 1:
+            self.pointer = parts[1] or self.pointer
+
+        self.href = '#'.join((self.url, self.pointer))
+
 
 class LazySchema(Schema):
 
-    def __init__(self, url, session=None):
-        self.url = url
+    def __init__(self, href, session=None):
+        self._init_href(href)
         self.session = session
         self._data = None
 
@@ -39,7 +49,7 @@ class LazySchema(Schema):
         if self._data is None:
             response = self.session.request('get', self.url)
             data = response.json()
-            self._data = data
+            self._data = resolve_pointer(data, self.pointer)
 
         return self._data
 
