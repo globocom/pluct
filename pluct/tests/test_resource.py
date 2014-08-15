@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-from unittest import TestCase
+from unittest import TestCase, skip
 from mock import patch, Mock
 
 from pluct import schema
@@ -126,7 +126,7 @@ class ParseResourceTestCase(TestCase):
             url="appurl.com", data=data, schema=self.schema)
         item = app.data['objects'][0]
 
-        self.assertIsInstance(item, Resource)
+        self.assertIsInstance(item, ObjectResource)
         self.assertEqual(item.data['id'], 111)
         self.assertEqual(item.schema.raw_schema, self.item_schema)
 
@@ -179,6 +179,7 @@ class ParseResourceWithExternalSchemaTestCase(TestCase):
         self.schema = schema.Schema(href="url.com", raw_schema=self.raw_schema)
         self.session = Session()
 
+    @skip('Waiting for new json pointer resolution')
     def test_assigns_lazy_schema_to_array_resources_with_external_schema(self):
         item_schema = Mock()
         with patch('pluct.resource.validate'):

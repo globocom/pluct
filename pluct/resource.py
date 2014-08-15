@@ -4,7 +4,7 @@ import uritemplate
 from jsonschema import SchemaError, validate, ValidationError
 
 from pluct import datastructures
-from pluct.schema import Schema, LazySchema
+from pluct.schema import Schema
 
 
 class Resource(object):
@@ -19,8 +19,7 @@ class Resource(object):
         self.schema = schema
         self.session = session
 
-        if self.schema and self.is_valid():
-            self.parse_data()
+        self.parse_data()
 
     def is_valid(self):
         try:
@@ -28,44 +27,6 @@ class Resource(object):
         except (SchemaError, ValidationError):
             return False
         return True
-
-    def parse_data(self):
-        if not isinstance(self.data, dict):
-            return
-
-        for key, value in self.data.items():
-            if not isinstance(value, list):
-                continue
-
-            item_schema = self.schema['properties'].get(key, {})
-            is_array = item_schema.get('type') == 'array'
-
-            if not is_array:
-                continue
-
-            data_items = []
-            prop_items = item_schema.get('items', {})
-
-            if "$ref" in prop_items:
-                s = LazySchema(prop_items['$ref'], session=self.session)
-            else:
-                s = Schema(self.url, prop_items, session=self.session)
-
-            for item in value:
-                if not isinstance(item, dict):
-                    data_items.append(item)
-                    continue
-
-                data_items.append(
-                    ObjectResource(
-                        self.url,
-                        data=item,
-                        schema=s,
-                        session=self.session,
-                    )
-                )
-
-            self.data[key] = data_items
 
     def rel(self, name, **kwargs):
         link = self.schema.get_link(name)
@@ -87,9 +48,12 @@ class Resource(object):
 
     @classmethod
     def from_data(cls, url, data=None, schema=None, session=None):
-        klass = ObjectResource
         if isinstance(data, (list, tuple)):
             klass = ArrayResource
+        elif isinstance(data, dict):
+            klass = ObjectResource
+        else:
+            return data
 
         return klass(
             url, data=data, schema=schema, session=session)
@@ -99,7 +63,7 @@ class Resource(object):
         try:
             data = response.json()
         except ValueError:
-            data = None
+            data = {}
         return cls.from_data(
             url=response.url,
             data=data,
@@ -107,8 +71,16 @@ class Resource(object):
             schema=schema
         )
 
+    def parse_data(self):
+        for key, value in self.iterate_items():
+            schema = self.item_schema(key)
+            self.data[key] = self.from_data(
+                self.url, data=value, schema=schema, session=self.session)
+
 
 class ObjectResource(datastructures.IterableUserDict, Resource):
+
+    SCHEMA_PREFIX = 'properties'
 
     def __init__(self, *args, **kwargs):
         self.init(*args, **kwargs)
@@ -116,11 +88,27 @@ class ObjectResource(datastructures.IterableUserDict, Resource):
     def default_data(self):
         return {}
 
+    def iterate_items(self):
+        return self.data.iteritems()
+
+    def item_schema(self, key):
+        href = '#/{0}/{1}'.format(self.SCHEMA_PREFIX, key)
+        return Schema(href, raw_schema=self.schema, session=self.session)
+
 
 class ArrayResource(datastructures.UserList, Resource):
+
+    SCHEMA_PREFIX = 'items'
 
     def __init__(self, *args, **kwargs):
         self.init(*args, **kwargs)
 
     def default_data(self):
         return []
+
+    def iterate_items(self):
+        return enumerate(self.data)
+
+    def item_schema(self, key):
+        href = '#/{0}'.format(self.SCHEMA_PREFIX)
+        return Schema(href, raw_schema=self.schema, session=self.session)
