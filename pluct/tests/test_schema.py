@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from copy import deepcopy
 from unittest import TestCase
 
 from mock import Mock, patch
@@ -13,6 +14,18 @@ SCHEMA = {
     'properties': {
         'name': {'type': 'string'},
         'platform': {'type': 'string'},
+        'pointer': {'$ref': '#/pointer'},
+        'pointers': {
+            'items': {
+                'oneOf': [
+                    {'$ref': '#/pointer'},
+                    {'$ref': '#/pointer2'},
+                ]
+            }
+        },
+        'repointer': {'$ref': '#/repointer'},
+        'external': {'$ref': 'http://example.com/schema#/pointer'},
+        'self': {'$ref': '#'},
     },
     'links': [
         {
@@ -21,22 +34,33 @@ SCHEMA = {
         }
     ],
     'required': ['platform', 'name'],
+    'pointer': {
+        'type': 'string',
+        'description': 'local-pointer-str',
+    },
+    'pointer2': {
+        'type': 'integer',
+        'description': 'local-pointer-int',
+    },
+    'repointer': {
+        '$ref': '#/pointer',
+    },
 }
 
 
 class BaseLazySchemaTestCase(TestCase):
 
     HREF = '/schema'
+    RAW_SCHEMA = SCHEMA
 
     def run(self, *args, **kwargs):
         self.session = Session()
         self.schema = LazySchema(self.HREF, session=self.session)
 
-        with patch.object(self.session, 'request') as request:
+        with patch.object(self.session, 'request') as self.request:
             self.response = Mock()
-            self.response.json.return_value = SCHEMA
-            self.request = request
-            request.return_value = self.response
+            self.response.json.return_value = deepcopy(self.RAW_SCHEMA)
+            self.request.return_value = self.response
 
             return super(BaseLazySchemaTestCase, self).run(*args, **kwargs)
 
@@ -48,7 +72,7 @@ class SchemaTestCase(TestCase):
 
         self.url = 'http://app.com/myschema'
         self.schema = Schema(
-            self.url, raw_schema=SCHEMA, session=self.session)
+            self.url, raw_schema=deepcopy(SCHEMA), session=self.session)
 
     def test_schema_required(self):
         self.assertListEqual(SCHEMA['required'], self.schema['required'])
@@ -57,7 +81,9 @@ class SchemaTestCase(TestCase):
         self.assertEqual(SCHEMA['title'], self.schema['title'])
 
     def test_schema_properties(self):
-        self.assertEqual(SCHEMA['properties'], self.schema['properties'])
+        self.assertEqual(
+            SCHEMA['properties']['name'],
+            self.schema.data['properties']['name'])
 
     def test_schema_links(self):
         self.assertListEqual(SCHEMA['links'], self.schema['links'])
@@ -72,14 +98,14 @@ class SchemaTestCase(TestCase):
 class LazySchemaTestCase(BaseLazySchemaTestCase):
 
     def test_loads_schema_once_accessing_data(self):
-        self.assertEqual(self.schema.data, SCHEMA)
-        self.assertEqual(self.schema.data, SCHEMA)
+        self.assertEqual(self.schema.data['title'], SCHEMA['title'])
+        self.assertEqual(self.schema.data['title'], SCHEMA['title'])
 
         self.request.assert_called_once_with('get', '/schema')
 
     def test_loads_schema_once_accessing_raw_schema(self):
-        self.assertEqual(self.schema.raw_schema, SCHEMA)
-        self.assertEqual(self.schema.raw_schema, SCHEMA)
+        self.assertEqual(self.schema.raw_schema['title'], SCHEMA['title'])
+        self.assertEqual(self.schema.raw_schema['title'], SCHEMA['title'])
 
         self.request.assert_called_once_with('get', '/schema')
 
@@ -129,7 +155,7 @@ class GetLinkTestCase(TestCase):
         self.url = '/'
         self.session = Session()
         self.schema = Schema(
-            self.url, raw_schema=SCHEMA, session=self.session)
+            self.url, raw_schema=deepcopy(SCHEMA), session=self.session)
 
     def test_returns_link_by_rel(self):
         link = self.schema.get_link('create')
@@ -149,8 +175,10 @@ class SchemaPointerTestCase(TestCase):
         self.href = '#'.join((self.url, self.pointer))
 
     def create_schema(self, href):
+        from copy import deepcopy
+        schema = deepcopy(SCHEMA)
         return Schema(
-            href, raw_schema=SCHEMA, session=self.session)
+            href, raw_schema=schema, session=self.session)
 
     def assertValidRefs(self, schema, url=None, pointer=None):
         url = url or self.url
@@ -180,13 +208,40 @@ class SchemaPointerTestCase(TestCase):
 
     def test_returns_root_schema_data_from_empty_pointer(self):
         schema = self.create_schema(self.href)
-        self.assertEqual(schema, SCHEMA)
+        self.assertEqual(schema['title'], SCHEMA['title'])
 
     def test_returns_schema_data_from_pointer(self):
         pointer = '/properties/name'
         schema = self.create_schema(self.href + pointer)
 
         self.assertEqual(schema, SCHEMA['properties']['name'])
+
+    def test_resolves_local_pointer_on_objects(self):
+        schema = self.create_schema(self.href)
+        self.assertEqual(schema['properties']['pointer'], SCHEMA['pointer'])
+
+    def test_resolves_local_pointer_on_arrays(self):
+        schema = self.create_schema(self.href)
+        pointers = schema['properties']['pointers']['items']['oneOf']
+        expected = [SCHEMA['pointer'], SCHEMA['pointer2']]
+        self.assertEqual(pointers, expected)
+
+    def test_keeps_context_between_refs(self):
+        schema = self.create_schema(self.href)
+        self.assertEqual(schema['properties']['repointer'], SCHEMA['pointer'])
+
+    def test_resolves_external_ref_with_lazy_schema(self):
+        schema = self.create_schema(self.href)
+        external = schema['properties']['external']
+        self.assertIsInstance(external, LazySchema)
+        self.assertEqual(
+            external.href, SCHEMA['properties']['external']['$ref'])
+
+    def test_resolves_self_reference(self):
+        schema = self.create_schema(self.href)
+        self_ref = schema['properties']['self']
+        self.assertEqual(
+            self_ref['title'], SCHEMA['title'])
 
 
 class LazySchemaPointerTestCase(BaseLazySchemaTestCase):

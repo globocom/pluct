@@ -15,6 +15,22 @@ class Schema(IterableUserDict):
         self._raw_schema = raw_schema
         self.session = session
 
+    def expand_refs(self, item):
+        if isinstance(item, dict):
+            iterator = item.iteritems()
+        elif isinstance(item, list):
+            iterator = enumerate(item)
+        else:
+            return
+
+        for key, value in iterator:
+            if isinstance(value, dict) and '$ref' in value:
+                item[key] = self.from_href(
+                    value['$ref'], raw_schema=self._raw_schema,
+                    session=self.session)
+                continue
+            self.expand_refs(value)
+
     @property
     def data(self):
         if self._data is None:
@@ -39,11 +55,7 @@ class Schema(IterableUserDict):
 
     def resolve(self):
         data = resolve_pointer(self._raw_schema, self.pointer)
-        if '$ref' in data:
-            return self.from_href(
-                data['$ref'], raw_schema=self._raw_schema,
-                session=self.session)
-
+        self.expand_refs(data)
         return data
 
     def get_link(self, name):
