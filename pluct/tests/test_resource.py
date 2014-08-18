@@ -128,7 +128,7 @@ class ParseResourceTestCase(TestCase):
 
         self.assertIsInstance(item, ObjectResource)
         self.assertEqual(item.data['id'], 111)
-        self.assertEqual(item.schema.raw_schema, self.item_schema)
+        self.assertEqual(item.schema, self.item_schema)
 
     def test_wraps_array_objects_as_resources_even_without_items_key(self):
         data = {

@@ -39,9 +39,7 @@ class Schema(IterableUserDict):
 
     @property
     def raw_schema(self):
-        # TODO: remove raw_schema or point to the real raw_schema
-        # Pointing seems more useful
-        return self.data
+        return self._raw_schema
 
     @classmethod
     def from_href(cls, href, raw_schema, session):
