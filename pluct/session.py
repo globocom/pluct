@@ -19,8 +19,11 @@ class Session(object):
 
     def resource(self, url, **kwargs):
         response = self.request(url, **kwargs)
+        schema = None
+
         schema_url = get_profile_from_header(response.headers)
-        schema = LazySchema(url=schema_url, session=self)
+        if schema_url is not None:
+            schema = LazySchema(href=schema_url, session=self)
 
         return Resource.from_response(
             response=response, session=self, schema=schema)

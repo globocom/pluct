@@ -93,7 +93,7 @@ class SessionResourceTestCase(TestCase):
         self.session.resource('/')
 
         LazySchema.assert_called_with(
-            url=self.schema_url, session=self.session)
+            href=self.schema_url, session=self.session)
 
         from_response.assert_called_with(
             response=self.response, session=self.session, schema='fake schema')
