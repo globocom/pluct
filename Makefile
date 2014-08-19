@@ -19,4 +19,4 @@ coverage_html:
 
 test: clean
 	@nosetests -s -v --with-coverage --cover-package=pluct --cover-branches --cover-erase
-	@flake8 .
+	@flake8 pluct/
