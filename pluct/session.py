@@ -42,5 +42,6 @@ class Session(object):
         kwargs.setdefault('method', 'get')
 
         response = self.client.request(url=url, **kwargs)
+        response.raise_for_status()
 
         return response

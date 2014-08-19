@@ -66,6 +66,10 @@ class SessionRequestsTestCase(TestCase):
         response = self.session.request('/')
         self.assertIs(response, self.response)
 
+    def test_checks_for_bad_response(self):
+        self.session.request('/')
+        self.response.raise_for_status.assert_called_once_with()
+
 
 class SessionResourceTestCase(TestCase):
 
