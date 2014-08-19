@@ -23,7 +23,7 @@ item.is_valid()
 first_title = item['subitems'][0]['title']
 
 # Accessing the item schema
-item.schema
+item.schema['properties']['title']
 
 # Loading a related resource
 category = item.rel('category')
@@ -109,6 +109,63 @@ To search for galleries is just a matter of passing a different
 
 ```python
 galleries = item.rel('search', params={'type': 'gallery', 'q': 'foo'})
+```
+
+Schema loading
+--------------
+
+When a resource is loaded, a lazy-schema schema will be created and its data
+will only be loaded when accessed.
+
+`Pluct` looks for a schema URL on the `profile` parameter of the
+`Content-type` header:
+
+```
+Content-Type: application/json; profile="http://myapi.com/api/schema"
+```
+
+References ($ref)
+-----------------
+
+[JSON Pointers](https://tools.ietf.org/html/rfc6901) on schemas are
+also supported.
+
+Pointers are identified by a dictionary with a `$ref` key pointing to an
+external URL or a local pointer.
+
+Considering the following definitions on the `/api/definitions` url:
+
+```json
+{
+    "address": {
+        "type": "object",
+        "properties": {
+            "line1": {"type": "string"},
+            "line2": {"type": "string"},
+            "zipcode": {"type": "integer"},
+        }
+    }
+}
+```
+
+And this schema on `/api/schema` that uses the above definitions:
+
+```json
+{
+    "properties": {
+        "shippingAddress": {"$ref": "http://myapi.com/api/definitions#/address"},
+        "billingAddress": {"$ref": "http://myapi.com/api/definitions#/address"},
+    }
+}
+```
+
+The `billingAddress` can be accessed as follows:
+
+```python
+import pluct
+schema = pluct.schema('/api/schema')
+
+schema['properties']['billingAddress']['zipcode'] == {"type": "integer"}
 ```
 
 Tests
