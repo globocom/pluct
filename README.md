@@ -10,24 +10,24 @@ and resource validation.
 Basic Usage
 -----------
 
-    ```python
-    import pluct
+```python
+import pluct
 
-    # Load a resource
-    item = pluct.resource('http://myapi.com/api/item')
+# Load a resource
+item = pluct.resource('http://myapi.com/api/item')
 
-    # Verifying if the resource is valid for the current schema
-    item.is_valid()
+# Verifying if the resource is valid for the current schema
+item.is_valid()
 
-    # Use the resource as a dictionary
-    first_title = item['subitems'][0]['title']
+# Use the resource as a dictionary
+first_title = item['subitems'][0]['title']
 
-    # Accessing the item schema
-    item.schema
+# Accessing the item schema
+item.schema
 
-    # Loading a related resource
-    category = item.rel('category')
-    ```
+# Loading a related resource
+category = item.rel('category')
+```
 
 Authentication / Custom HTTP Client
 -----------------------------------
@@ -41,19 +41,19 @@ Any other client with the same interface can be used.
 Here is an example using [alf](https://github.com/globocom/alf), an
 OAuth 2 client:
 
-    ```python
-    from pluct import Pluct
-    from alf.client import Client
+```python
+from pluct import Pluct
+from alf.client import Client
 
-    alf = Client(
-        token_endpoint='http://example.com/token',
-        client_id='client-id',
-        client_secret='secret')
+alf = Client(
+    token_endpoint='http://example.com/token',
+    client_id='client-id',
+    client_secret='secret')
 
-    # Create a pluct session using the client
-    pluct = Pluct(client=alf)
-    item = pluct.resource('http://example.com/api/item')
-    ```
+# Create a pluct session using the client
+pluct = Pluct(client=alf)
+item = pluct.resource('http://example.com/api/item')
+```
 
 All subsequent requests for schemas or resources in this session will use
 the same client.
@@ -73,43 +73,43 @@ for the request.
 Better explained in an example. Consider the following resource and
 schema snippets:
 
-    ```json
-    {
-        "type": "article"
-    }
-    ```
+```json
+{
+    "type": "article"
+}
+```
 
-    ```json
-    {
-        "...": "..."
-        "links": [
-            {
-                "rel": "search",
-                "href": "/api/search/{type}"
-            }
-        ]
-    }
-    ```
+```json
+{
+    "...": "..."
+    "links": [
+        {
+            "rel": "search",
+            "href": "/api/search/{type}"
+        }
+    ]
+}
+```
 
 The next example will resolve the `href` from the `search` link
 to `/api/search/article?q=foo` and will load articles containing
 the text "foo":
 
-    ```python
-    import pluct
+```python
+import pluct
 
-    # Load a resource
-    item = pluct.resource('http://myapi.com/api/item')
+# Load a resource
+item = pluct.resource('http://myapi.com/api/item')
 
-    articles = item.rel('search', params={'q': 'foo'})
-    ```
+articles = item.rel('search', params={'q': 'foo'})
+```
 
 To search for galleries is just a matter of passing a different
 `type` in the `params` argument, as follows:
 
-    ```python
-    galleries = item.rel('search', params={'type': 'gallery', 'q': 'foo'})
-    ```
+```python
+galleries = item.rel('search', params={'type': 'gallery', 'q': 'foo'})
+```
 
 Tests
 -----
