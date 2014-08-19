@@ -25,6 +25,7 @@ SCHEMA = {
         },
         'repointer': {'$ref': '#/repointer'},
         'external': {'$ref': 'http://example.com/schema#/pointer'},
+        'external2': {'$ref': 'http://example.com/schema#/pointer'},
         'self': {'$ref': '#'},
     },
     'links': [
@@ -114,6 +115,32 @@ class LazySchemaTestCase(BaseLazySchemaTestCase):
 
     def test_session(self):
         self.assertIs(self.session, self.schema.session)
+
+
+class CircularSchemaTestCase(TestCase):
+
+    def test_uses_original_ref_on_representation(self):
+        raw_schema = {
+            'properties': {
+                'inner': {'$ref': '/schema'},
+            }
+        }
+        session = Session()
+        schema = Schema('/schema', raw_schema=raw_schema, session=session)
+        self.assertEqual(repr(schema), repr(raw_schema))
+
+
+class LazyCircularSchemaTestCase(BaseLazySchemaTestCase):
+
+    HREF = '/schema#'
+    RAW_SCHEMA = {
+        'properties': {
+            'inner': {'$ref': HREF},
+        }
+    }
+
+    def test_uses_original_ref_on_representation(self):
+        self.assertEqual(repr(self.schema), repr({'$ref': self.HREF}))
 
 
 class GetProfileFromHeaderTestCase(TestCase):
@@ -250,3 +277,52 @@ class LazySchemaPointerTestCase(BaseLazySchemaTestCase):
 
     def test_applies_pointer_to_loaded_schema(self):
         self.assertEqual(self.schema, SCHEMA['properties']['name'])
+
+
+class SchemaStoreMixinTestCase(object):
+
+    SCHEMA_URL = 'http://a.com/schema'
+
+    def setUp(self):
+        self.session = Session()
+
+    def test_reuses_schema_for_same_href(self):
+        schema1 = self.create_schema(self.SCHEMA_URL)
+        schema2 = self.create_schema(self.SCHEMA_URL)
+        self.assertIs(schema1, schema2)
+
+    def test_doesnt_reuse_schema_with_empty_url(self):
+        schema1 = self.create_schema('')
+        schema2 = self.create_schema('')
+        self.assertIs(schema1, schema2)
+
+    def test_reuses_schema_for_different_pointers(self):
+        schema1 = self.create_schema(self.SCHEMA_URL)
+        schema2 = self.create_schema(
+            self.SCHEMA_URL + '#/pointer')
+        self.assertIs(schema1, schema2)
+
+    def test_does_not_reuse_schema_on_different_sessions(self):
+        other_session = Session()
+
+        schema1 = self.create_schema(self.SCHEMA_URL)
+        schema2 = self.create_schema(
+            self.SCHEMA_URL, session=other_session)
+
+        self.assertIsNot(schema1, schema2)
+
+
+class SchemaStoreTestCase(SchemaStoreMixinTestCase, TestCase):
+
+    def create_schema(self, url, session=None):
+        if session is None:
+            session = self.session
+        return Schema(self.SCHEMA_URL, raw_schema={}, session=session)
+
+
+class LazySchemaStoreTestCase(SchemaStoreMixinTestCase, TestCase):
+
+    def create_schema(self, url, session=None):
+        if session is None:
+            session = self.session
+        return LazySchema(self.SCHEMA_URL, session=session)

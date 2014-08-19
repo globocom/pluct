@@ -10,6 +10,7 @@ class Session(object):
 
     def __init__(self, client=None, timeout=None):
         self.timeout = timeout
+        self.store = {}
 
         if client is None:
             self.client = RequestsSession()

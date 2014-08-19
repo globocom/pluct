@@ -35,7 +35,7 @@ class ResourceRelTestCase(TestCase):
         data = {'id': '123', 'slug': 'slug'}
 
         self.session = Session()
-        self.schema = Schema('/schema', raw_schema)
+        self.schema = Schema('/schema', raw_schema, session=self.session)
         self.resource = Resource.from_data(
             '/', data=data, schema=self.schema, session=self.session)
 

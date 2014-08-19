@@ -7,7 +7,26 @@ from jsonpointer import resolve_pointer
 from pluct.datastructures import IterableUserDict
 
 
-class Schema(IterableUserDict):
+class Schema(IterableUserDict, object):
+
+    @staticmethod
+    def __new__(cls, href, *args, **kwargs):
+        (href, url, pointer) = cls._split_href(href)
+
+        session = kwargs['session']
+
+        if href in session.store:
+            return session.store[href]
+
+        instance = super(Schema, cls).__new__(cls, href, *args, **kwargs)
+        session.store[href] = instance
+
+        if pointer:
+            # Reuse the constructor to make it register the root schema
+            # without a pointer
+            cls(url, *args, **kwargs)
+
+        return instance
 
     def __init__(self, href, raw_schema=None, session=None):
         self._init_href(href)
@@ -52,7 +71,7 @@ class Schema(IterableUserDict):
         return Schema(href, raw_schema=raw_schema, session=session)
 
     def resolve(self):
-        data = resolve_pointer(self._raw_schema, self.pointer)
+        data = resolve_pointer(self.raw_schema, self.pointer)
         self.expand_refs(data)
         return data
 
@@ -88,10 +107,15 @@ class LazySchema(Schema):
         self._data = None
         self._raw_schema = None
 
-    def resolve(self):
-        response = self.session.request('get', self.url)
-        self._raw_schema = response.json()
-        return Schema.resolve(self)
+    @property
+    def raw_schema(self):
+        if self._raw_schema is None:
+            response = self.session.request('get', self.url)
+            self._raw_schema = response.json()
+        return self._raw_schema
+
+    def __repr__(self):
+        return repr({'$ref': self.href})
 
 
 def get_profile_from_header(headers):
