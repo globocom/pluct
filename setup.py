@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 setup(
     name='pluct',
     version='0.7.0',
-    description='python client to Jsonschema APIs',
+    description='JSON Hyper Schema client',
     author='Marcos Daniel Petry',
     author_email='marcospetry@gmail.com',
     url='git@github.com:globocom/pluct.git',
