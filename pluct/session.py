@@ -38,6 +38,6 @@ class Session(object):
 
         kwargs.setdefault('method', 'get')
 
-        response = self.client.request(url, **kwargs)
+        response = self.client.request(url=url, **kwargs)
 
         return response

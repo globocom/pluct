@@ -37,29 +37,30 @@ class SessionRequestsTestCase(TestCase):
     def test_delegates_request_to_client(self):
         self.session.request('/')
         self.client.request.assert_called_with(
-            '/', method='get', headers=ANY)
+            url='/', method='get', headers=ANY)
 
     def test_uses_default_timeout(self):
         self.session.timeout = 333
         self.session.request('/')
         self.client.request.assert_called_with(
-            '/', method='get', timeout=333, headers=ANY)
+            url='/', method='get', timeout=333, headers=ANY)
 
     def test_allows_custom_timeout_per_request(self):
         self.session.request('/', timeout=999)
         self.client.request.assert_called_with(
-            '/', method='get', timeout=999, headers=ANY)
+            url='/', method='get', timeout=999, headers=ANY)
 
     def test_applies_json_content_type_header(self):
         self.session.request('/')
         self.client.request.assert_called_with(
-            '/', method='get', headers={'content-type': 'application/json'})
+            url='/', method='get',
+            headers={'content-type': 'application/json'})
 
     def test_allows_custom_content_type_header(self):
         custom_headers = {'content-type': 'application/yaml'}
         self.session.request('/', headers=custom_headers)
         self.client.request.assert_called_with(
-            '/', method='get', headers=custom_headers)
+            url='/', method='get', headers=custom_headers)
 
     def test_returns_response(self):
         response = self.session.request('/')
