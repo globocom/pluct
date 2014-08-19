@@ -44,7 +44,7 @@ class Resource(object):
                 k: v for k, v in params.items() if k not in variables}
             kwargs['params'] = unused_params
 
-        return self.session.request(method, uri, **kwargs)
+        return self.session.request(uri, method=method, **kwargs)
 
     @classmethod
     def from_data(cls, url, data=None, schema=None, session=None):

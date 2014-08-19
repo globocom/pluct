@@ -110,7 +110,7 @@ class LazySchema(Schema):
     @property
     def raw_schema(self):
         if self._raw_schema is None:
-            response = self.session.request('get', self.url)
+            response = self.session.request(self.url)
             self._raw_schema = response.json()
         return self._raw_schema
 

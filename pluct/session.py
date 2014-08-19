@@ -17,25 +17,27 @@ class Session(object):
         else:
             self.client = client
 
-    def resource(self, url, *args, **kwargs):
-        response = self.request('get', url, *args, **kwargs)
+    def resource(self, url, **kwargs):
+        response = self.request(url, **kwargs)
         schema_url = get_profile_from_header(response.headers)
         schema = LazySchema(url=schema_url, session=self)
 
         return Resource.from_response(
             response=response, session=self, schema=schema)
 
-    def schema(self, url, *args, **kwargs):
-        data = self.request('get', url, *args, **kwargs).json()
+    def schema(self, url, **kwargs):
+        data = self.request(url, **kwargs).json()
         return Schema(url, raw_schema=data, session=self)
 
-    def request(self, method, url, *args, **kwargs):
+    def request(self, url, **kwargs):
         if self.timeout is not None:
             kwargs.setdefault('timeout', self.timeout)
 
         kwargs.setdefault('headers', {})
         kwargs['headers'].setdefault('content-type', 'application/json')
 
-        response = self.client.request(method, url, *args, **kwargs)
+        kwargs.setdefault('method', 'get')
+
+        response = self.client.request(url, **kwargs)
 
         return response

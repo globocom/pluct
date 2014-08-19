@@ -102,13 +102,13 @@ class LazySchemaTestCase(BaseLazySchemaTestCase):
         self.assertEqual(self.schema.data['title'], SCHEMA['title'])
         self.assertEqual(self.schema.data['title'], SCHEMA['title'])
 
-        self.request.assert_called_once_with('get', '/schema')
+        self.request.assert_called_once_with('/schema', method='get')
 
     def test_loads_schema_once_accessing_raw_schema(self):
         self.assertEqual(self.schema['title'], SCHEMA['title'])
         self.assertEqual(self.schema['title'], SCHEMA['title'])
 
-        self.request.assert_called_once_with('get', '/schema')
+        self.request.assert_called_once_with('/schema', method='get')
 
     def test_url(self):
         self.assertEqual(self.schema.url, '/schema')

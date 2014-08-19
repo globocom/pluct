@@ -47,30 +47,30 @@ class ResourceRelTestCase(TestCase):
 
     def test_delegates_request_to_session(self):
         self.resource.rel('create')
-        self.request.assert_called_with('post', '/root')
+        self.request.assert_called_with('/root', method='post')
 
     def test_accepts_extra_parameters(self):
         self.resource.rel('create', timeout=333)
-        self.request.assert_called_with('post', '/root', timeout=333)
+        self.request.assert_called_with('/root', method='post', timeout=333)
 
     def test_uses_get_as_default_verb(self):
         self.resource.rel('list')
-        self.request.assert_called_with('get', '/root')
+        self.request.assert_called_with('/root', method='get')
 
     def test_expands_uri_using_resource_data(self):
         self.resource.rel('item')
-        self.request.assert_called_with('get', '/root/123')
+        self.request.assert_called_with('/root/123', method='get')
 
     def test_expands_uri_using_params(self):
         self.resource.rel('item', params={'id': 345})
-        self.request.assert_called_with('get', '/root/345', params={})
+        self.request.assert_called_with('/root/345', method='get', params={})
 
     def test_expands_uri_using_resource_data_and_params(self):
         self.resource.rel('related', params={'related': 'something'})
         self.request.assert_called_with(
-            'get', '/root/slug/something', params={})
+            '/root/slug/something', method='get', params={})
 
     def test_extracts_expanded_params_from_the_uri(self):
         self.resource.rel('item', params={'id': 345, 'fields': 'slug'})
         self.request.assert_called_with(
-            'get', '/root/345', params={'fields': 'slug'})
+            '/root/345', method='get', params={'fields': 'slug'})
