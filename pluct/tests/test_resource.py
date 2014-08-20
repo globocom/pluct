@@ -268,4 +268,3 @@ class ResourceFromDataTestCase(BaseTestCase):
         self.assertIsInstance(resource, ObjectResource)
         self.assertEqual(resource.url, '/')
         self.assertEqual(resource.data, data)
-
