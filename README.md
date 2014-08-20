@@ -46,13 +46,13 @@ from pluct import Pluct
 from alf.client import Client
 
 alf = Client(
-    token_endpoint='http://example.com/token',
+    token_endpoint='http://myapi.com/token',
     client_id='client-id',
     client_secret='secret')
 
 # Create a pluct session using the client
 pluct = Pluct(client=alf)
-item = pluct.resource('http://example.com/api/item')
+item = pluct.resource('http://myapi.com/api/item')
 ```
 
 All subsequent requests for schemas or resources in this session will use
@@ -124,6 +124,14 @@ will only be loaded when accessed.
 Content-Type: application/json; profile="http://myapi.com/api/schema"
 ```
 
+To manually load a schema use:
+
+```python
+import pluct
+schema = pluct.schema('http://myapi.com/api/schema')
+```
+
+
 References ($ref)
 -----------------
 
@@ -163,12 +171,21 @@ The `billingAddress` can be accessed as follows:
 
 ```python
 import pluct
-schema = pluct.schema('/api/schema')
+schema = pluct.schema('http://myapi.com/api/schema')
 
 schema['properties']['billingAddress']['zipcode'] == {"type": "integer"}
 ```
 
-Tests
------
+Contributing
+------------
 
-The `pluct/tests` directory contains the standard test stack for pluct.
+Fork the repository on Github:
+https://github.com/globocom/pluct
+
+Create a virtualenv and install the dependencies:
+
+`make setup`
+
+Tests are on the `pluct/tests` directory, run the test suite with:
+
+`make test`
