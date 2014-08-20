@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import uritemplate
+import jsonpointer
+
 from jsonschema import SchemaError, validate, ValidationError
 
 from pluct import datastructures
@@ -76,6 +78,9 @@ class Resource(object):
             schema = self.item_schema(key)
             self.data[key] = self.from_data(
                 self.url, data=value, schema=schema, session=self.session)
+
+    def resolve_pointer(self, *args, **kwargs):
+        return jsonpointer.resolve_pointer(self.data, *args, **kwargs)
 
 
 class ObjectResource(datastructures.IterableUserDict, Resource):

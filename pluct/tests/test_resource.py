@@ -101,6 +101,9 @@ class ResourceTestCase(BaseTestCase):
     def test_is_valid(self):
         self.assertTrue(self.result.is_valid())
 
+    def test_resolve_pointer(self):
+        self.assertEqual(self.result.resolve_pointer("/name"), "repos")
+
 
 class ParseResourceTestCase(BaseTestCase):
 
@@ -265,3 +268,4 @@ class ResourceFromDataTestCase(BaseTestCase):
         self.assertIsInstance(resource, ObjectResource)
         self.assertEqual(resource.url, '/')
         self.assertEqual(resource.data, data)
+
