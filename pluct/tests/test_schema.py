@@ -105,8 +105,8 @@ class LazySchemaTestCase(BaseLazySchemaTestCase):
         self.request.assert_called_once_with('/schema')
 
     def test_loads_schema_once_accessing_raw_schema(self):
-        self.assertEqual(self.schema['title'], SCHEMA['title'])
-        self.assertEqual(self.schema['title'], SCHEMA['title'])
+        self.assertEqual(self.schema.raw_schema['title'], SCHEMA['title'])
+        self.assertEqual(self.schema.raw_schema['title'], SCHEMA['title'])
 
         self.request.assert_called_once_with('/schema')
 
