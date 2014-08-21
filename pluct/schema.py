@@ -34,8 +34,15 @@ class Schema(IterableUserDict, object):
         self._raw_schema = raw_schema
         self.session = session
 
+    @property
+    def __class__(self):
+        return dict
+
+    def _is_simple_dict(self, obj):
+        return isinstance(obj, dict) and (not isinstance(obj, Schema))
+
     def expand_refs(self, item):
-        if isinstance(item, dict):
+        if self._is_simple_dict(item):
             iterator = item.iteritems()
         elif isinstance(item, list):
             iterator = enumerate(item)
@@ -43,7 +50,9 @@ class Schema(IterableUserDict, object):
             return
 
         for key, value in iterator:
-            if isinstance(value, dict) and '$ref' in value:
+            key_ref_in_dict = (self._is_simple_dict(value)
+                               and ('$ref' in value))
+            if key_ref_in_dict:
                 item[key] = self.from_href(
                     value['$ref'], raw_schema=self._raw_schema,
                     session=self.session)

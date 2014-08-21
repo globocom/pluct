@@ -4,7 +4,6 @@ from copy import deepcopy
 from unittest import TestCase
 
 from mock import Mock, patch
-
 from pluct.schema import get_profile_from_header, LazySchema, Schema
 from pluct.session import Session
 
@@ -202,7 +201,6 @@ class SchemaPointerTestCase(TestCase):
         self.href = '#'.join((self.url, self.pointer))
 
     def create_schema(self, href):
-        from copy import deepcopy
         schema = deepcopy(SCHEMA)
         return Schema(
             href, raw_schema=schema, session=self.session)
@@ -240,7 +238,6 @@ class SchemaPointerTestCase(TestCase):
     def test_returns_schema_data_from_pointer(self):
         pointer = '/properties/name'
         schema = self.create_schema(self.href + pointer)
-
         self.assertEqual(schema, SCHEMA['properties']['name'])
 
     def test_resolves_local_pointer_on_objects(self):
@@ -269,6 +266,14 @@ class SchemaPointerTestCase(TestCase):
         self_ref = schema['properties']['self']
         self.assertEqual(
             self_ref['title'], SCHEMA['title'])
+
+    def test_is_instance_of_dict(self):
+        schema = self.create_schema(self.href)
+        self.assertIsInstance(schema, dict)
+
+    def test_is_instance_of_schema(self):
+        schema = self.create_schema(self.href)
+        self.assertIsInstance(schema, Schema)
 
 
 class LazySchemaPointerTestCase(BaseLazySchemaTestCase):

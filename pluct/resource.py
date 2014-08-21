@@ -83,7 +83,7 @@ class Resource(object):
         return jsonpointer.resolve_pointer(self.data, *args, **kwargs)
 
 
-class ObjectResource(datastructures.IterableUserDict, Resource):
+class ObjectResource(datastructures.IterableUserDict, Resource, dict):
 
     SCHEMA_PREFIX = 'properties'
 
@@ -101,7 +101,7 @@ class ObjectResource(datastructures.IterableUserDict, Resource):
         return Schema(href, raw_schema=self.schema, session=self.session)
 
 
-class ArrayResource(datastructures.UserList, Resource):
+class ArrayResource(datastructures.UserList, Resource, list):
 
     SCHEMA_PREFIX = 'items'
 

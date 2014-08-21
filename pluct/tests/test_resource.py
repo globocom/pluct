@@ -104,6 +104,12 @@ class ResourceTestCase(BaseTestCase):
     def test_resolve_pointer(self):
         self.assertEqual(self.result.resolve_pointer("/name"), "repos")
 
+    def test_resource_should_be_instance_of_dict(self):
+        self.assertIsInstance(self.result, dict)
+
+    def test_resource_should_be_instance_of_schema(self):
+        self.assertIsInstance(self.result, Resource)
+
 
 class ParseResourceTestCase(BaseTestCase):
 
@@ -268,4 +274,3 @@ class ResourceFromDataTestCase(BaseTestCase):
         self.assertIsInstance(resource, ObjectResource)
         self.assertEqual(resource.url, '/')
         self.assertEqual(resource.data, data)
-
