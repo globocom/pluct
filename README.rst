@@ -126,3 +126,66 @@ data will only be loaded when accessed.
 .. code:: python
 
     Content-Type: application/json; profile="http://myapi.com/api/schema"
+
+References ($ref)
+-----------------
+
+`JSON Pointers <https://tools.ietf.org/html/rfc6901>`_ on schemas are
+also supported.
+
+Pointers are identified by a dictionary with a ``$ref`` key pointing to an
+external URL or a local pointer.
+
+Considering the following definitions on the ``/api/definitions`` url:
+
+.. code:: json
+
+    {
+        "address": {
+            "type": "object",
+            "properties": {
+                "line1": {"type": "string"},
+                "line2": {"type": "string"},
+                "zipcode": {"type": "integer"},
+            }
+        }
+    }
+
+And this schema on ``/api/schema`` that uses the above definitions:
+
+.. code:: json
+
+    {
+        "properties": {
+            "shippingAddress": {"$ref": "http://myapi.com/api/definitions#/address"},
+            "billingAddress": {"$ref": "http://myapi.com/api/definitions#/address"},
+        }
+    }
+
+The ``billingAddress`` can be accessed as follows:
+
+.. code:: python
+
+    import pluct
+    schema = pluct.schema('http://myapi.com/api/schema')
+
+    schema['properties']['billingAddress']['zipcode'] == {"type": "integer"}
+
+Contributing
+------------
+
+Fork the repository on Github:
+https://github.com/globocom/pluct
+
+Create a virtualenv and install the dependencies:
+
+.. code:: bash
+
+    make setup
+
+Tests are on the `pluct/tests` directory, run the test suite with:
+
+.. code:: bash
+
+    make test
+
