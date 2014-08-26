@@ -1,22 +1,43 @@
 # -*- coding: utf-8 -*-
 
 
-from requests import Response
-
 from unittest import TestCase
 from mock import patch, Mock
-from urlparse import urlparse, parse_qs
 
-from pluct import resource, schema
-from pluct.resource import Resource
-from pluct.request import from_response
+from pluct.resource import Resource, ObjectResource, ArrayResource
+from pluct.session import Session
+from pluct.schema import Schema
 
 
-class ResourceTestCase(TestCase):
+class BaseTestCase(TestCase):
 
-    @patch("pluct.schema.get")
-    @patch("requests.get")
-    def setUp(self, mock_get, mock_schema_get):
+    def setUp(self):
+        self.session = Session()
+
+    def resource_from_data(self, url, data=None, schema=None):
+        resource = Resource.from_data(
+            url=url, data=data, schema=schema, session=self.session)
+        return resource
+
+    def resource_from_response(self, response, schema):
+        resource = Resource.from_response(
+            response, session=self.session, schema=schema)
+
+        return resource
+
+
+class ResourceInitTestCase(BaseTestCase):
+
+    def test_blocks_init_of_base_class(self):
+        with self.assertRaises(NotImplementedError):
+            Resource()
+
+
+class ResourceTestCase(BaseTestCase):
+
+    def setUp(self):
+        super(ResourceTestCase, self).setUp()
+
         self.data = {
             "name": "repos",
             "platform": "js",
@@ -41,18 +62,13 @@ class ResourceTestCase(TestCase):
                     "rel": "env"
                 }
             ]}
-        self.schema = schema.Schema(url="url.com", raw_schema=raw_schema)
-        mock_schema_get.return_value = self.schema
-        self.headers = {
-            'content-type': 'application/json; profile=url.com'
-        }
-        mock = Mock(headers=self.headers)
-        mock.json.return_value = self.data
-        mock_get.return_value = mock
+        self.schema = Schema(
+            href="url.com", raw_schema=raw_schema, session=self.session)
+
         self.url = "http://app.com/content"
-        self.auth = {"type": "t", "credentials": "c"}
-        self.result = resource.get(url=self.url, auth=self.auth)
-        mock_schema_get.assert_called_with("url.com", self.auth)
+
+        self.result = self.resource_from_data(
+            url=self.url, data=self.data, schema=self.schema)
 
     def test_get_should_returns_a_resource(self):
         self.assertIsInstance(self.result, Resource)
@@ -74,174 +90,83 @@ class ResourceTestCase(TestCase):
     def test_schema(self):
         self.assertEqual(self.schema.url, self.result.schema.url)
 
-    @patch('pluct.request.from_response')
-    @patch("requests.get")
-    def test_methods(self, get, resource_from_response):
-        self.assertTrue(hasattr(self.result, "log"))
-        self.assertTrue(hasattr(self.result, "env"))
-        self.result.log()
-        get.assert_called_with(url='/apps/repos/log',
-                               headers={'content-type': 'application/json',
-                                        'Authorization': 't c'},
-                               timeout=30)
-
     def test_is_valid_schema_error(self):
-        old = self.result.schema.required
+        old = self.result.schema['required']
         try:
-            self.result.schema.required = ["ble"]
+            self.result.schema['required'] = ["ble"]
             self.assertFalse(self.result.is_valid())
         finally:
             self.result.schema.required = old
 
-    @patch("pluct.schema.from_header")
-    @patch("requests.get")
-    def test_is_valid_invalid(self, get, from_header):
-        from_header.return_value = self.schema
+    def test_is_valid_invalid(self):
         data = {
             u'doestnotexists': u'repos',
         }
-        mock = Mock(headers={})
-        mock.json.return_value = data
-        get.return_value = mock
-        result = resource.get(url="appurl.com", auth=None)
+        result = self.resource_from_data('/url', data=data, schema=self.schema)
         self.assertFalse(result.is_valid())
 
     def test_is_valid(self):
         self.assertTrue(self.result.is_valid())
 
-    @patch('pluct.request.from_response')
-    @patch("requests.get")
-    def test_extra_parameters_querystring(self, get, resource_from_response):
-        data = {
-            u'name': u'repos',
-            u'platform': u'repos',
-        }
-        app = Resource(url="appurl.com",
-                       data=data,
-                       schema=self.schema)
+    def test_resolve_pointer(self):
+        self.assertEqual(self.result.resolve_pointer("/name"), "repos")
 
-        app.log(lines=10)
-        url = '/apps/repos/log?lines=10'
-        get.assert_called_with(
-            url=url,
-            headers={'content-type': 'application/json'},
-            timeout=30
-        )
+    def test_resource_should_be_instance_of_dict(self):
+        self.assertIsInstance(self.result, dict)
 
-        app.log(lines=10, source="app")
-        qs = parse_qs(urlparse(get.call_args[1]['url']).query)
-        expected = {'source': ['app'], 'lines': ['10']}
-        self.assertEqual(qs, expected)
-
-    @patch('pluct.request.from_response')
-    @patch("requests.get")
-    def test_extra_parameters_uri(self, get, resource_from_response):
-        data = {
-            u'name': u'repos',
-            u'platform': u'repos',
-        }
-        self.schema.links[0]['href'] = '/apps/{name}/log/{lines}'
-        app = Resource(url="appurl.com",
-                       data=data,
-                       schema=self.schema)
-
-        app.log(lines=10, source="app")
-        url = '/apps/repos/log/10?source=app'
-        get.assert_called_with(
-            url=url,
-            headers={'content-type': 'application/json'},
-            timeout=30
-        )
-
-    @patch('pluct.request.from_response')
-    @patch("requests.get")
-    def test_extra_parameters_timeout_uri(self, get, resource_from_response):
-        data = {
-            u'name': u'repos',
-            u'platform': u'repos',
-        }
-        self.schema.links[0]['href'] = '/apps/{name}/log/{lines}'
-        app = Resource(url="appurl.com",
-                       data=data,
-                       schema=self.schema,
-                       timeout=10)
-
-        app.log(lines=10, source="app")
-        url = '/apps/repos/log/10?source=app'
-        get.assert_called_with(
-            url=url,
-            headers={'content-type': 'application/json'},
-            timeout=10
-        )
-
-    @patch('pluct.request.from_response')
-    @patch("requests.get")
-    def test_extra_parameters_uri_name_bug(self, get, resource_from_response):
-        # regression for #12.
-        data = {'platform': 'xpto'}
-        link = {
-            "href": "http://example.org/{context_name}",
-            "method": "GET",
-            "rel": "example"
-        }
-        self.schema.links.append(link)
-        app = Resource(url="appurl.com",
-                       data=data,
-                       schema=self.schema)
-
-        app.example(context_name='context', name='value1')
-        url = 'http://example.org/context?name=value1'
-        get.assert_called_with(
-            url=url,
-            headers={'content-type': 'application/json'},
-            timeout=30
-        )
+    def test_resource_should_be_instance_of_schema(self):
+        self.assertIsInstance(self.result, Resource)
 
 
-class ParseResourceTestCase(TestCase):
+class ParseResourceTestCase(BaseTestCase):
 
     def setUp(self):
-        raw_schema = {
+        super(ParseResourceTestCase, self).setUp()
+
+        self.item_schema = {
+            'type': 'object',
+            'properties': {
+                'id': {
+                    'type': 'integer'
+                }
+            },
+            'links': [{
+                "href": "http://localhost/foos/{id}/",
+                "method": "GET",
+                "rel": "item",
+            }]
+        }
+
+        self.raw_schema = {
             'title': "title",
             'type': "object",
 
             'properties': {
                 u'objects': {
                     u'type': u'array',
-                    u'items': {
-                        'type': 'object',
-                        'properties': {
-                            'id': {
-                                'type': 'integer'
-                            }
-                        },
-                        'links': [{
-                            "href": "http://localhost/foos/{id}/",
-                            "method": "GET",
-                            "rel": "item",
-                        }]
-                    }
+                    u'items': self.item_schema,
                 },
                 u'values': {
                     u'type': u'array'
                 }
             }
         }
-        self.schema = schema.Schema(url="url.com", raw_schema=raw_schema)
+        self.schema = Schema(
+            href="url.com", raw_schema=self.raw_schema, session=self.session)
 
-    @patch("requests.get")
-    def test_wraps_array_objects_as_resources(self, get):
+    def test_wraps_array_objects_as_resources(self):
         data = {
             'objects': [
-                {'id': 1}
+                {'id': 111}
             ]
         }
-        app = Resource(url="appurl.com", data=data, schema=self.schema)
-        app.data['objects'][0].item()
-        url = 'http://localhost/foos/1/'
+        app = self.resource_from_data(
+            url="appurl.com", data=data, schema=self.schema)
+        item = app.data['objects'][0]
 
-        get.assert_called_with(
-            url=url, headers={'content-type': 'application/json'}, timeout=30)
+        self.assertIsInstance(item, ObjectResource)
+        self.assertEqual(item.data['id'], 111)
+        self.assertEqual(item.schema, self.item_schema)
 
     def test_wraps_array_objects_as_resources_even_without_items_key(self):
         data = {
@@ -249,7 +174,8 @@ class ParseResourceTestCase(TestCase):
                 {'id': 1}
             ]
         }
-        resource = Resource(url="appurl.com", data=data, schema=self.schema)
+        resource = self.resource_from_data(
+            url="appurl.com", data=data, schema=self.schema)
 
         item = resource['values'][0]
         self.assertIsInstance(item, Resource)
@@ -264,48 +190,40 @@ class ParseResourceTestCase(TestCase):
                 ['array']
             ]
         }
-        resource_list = Resource(
+        resource_list = self.resource_from_data(
             url="appurl.com", data=data, schema=self.schema)
         values = resource_list['values']
 
         self.assertEqual(values, data['values'])
 
 
-class FromResponseTestCase(TestCase):
+class FromResponseTestCase(BaseTestCase):
 
     def setUp(self):
-        self._response = Response()
+        super(FromResponseTestCase, self).setUp()
+
+        self._response = Mock()
         self._response.url = 'http://example.com'
+
         content_type = 'application/json; profile=http://example.com/schema'
         self._response.headers = {
             'content-type': content_type
         }
-        self._auth = {'type': 't', 'credentials': 'c'}
+        self.schema = Schema('/', raw_schema={}, session=self.session)
 
-    @patch('pluct.schema.from_header')
-    def test_should_return_resource_from_response(self, from_header):
-        self._response.json = Mock(return_value={})
-        self._response.status_code = 200
-        returned_resource = from_response(Resource, self._response, self._auth)
+    def test_should_return_resource_from_response(self):
+        self._response.json.return_value = {}
+        returned_resource = self.resource_from_response(
+            self._response, schema=self.schema)
         self.assertEqual(returned_resource.url, 'http://example.com')
-        self.assertEqual(returned_resource.auth, self._auth)
-        self.assertEqual(returned_resource.data, {})
-        self.assertEqual(returned_resource.response.status_code, 200)
-
-    @patch('pluct.schema.from_header')
-    def test_should_return_resource_from_response_with_no_json_data(
-            self, from_header):
-        self._response.json = Mock(side_effect=ValueError())
-        returned_resource = from_response(Resource, self._response, self._auth)
-        self.assertEqual(returned_resource.url, 'http://example.com')
-        self.assertEqual(returned_resource.auth, self._auth)
         self.assertEqual(returned_resource.data, {})
 
-    @patch('pluct.schema.from_header')
-    def test_should_obtain_schema_from_header(self, from_header):
+    def test_should_return_resource_from_response_with_no_json_data(self):
         self._response.json = Mock(side_effect=ValueError())
-        from_response(Resource, self._response, self._auth)
-        from_header.assert_called_with(self._response.headers, self._auth)
+        returned_resource = self.resource_from_response(
+            self._response, schema=self.schema)
+        self.assertEqual(returned_resource.url, 'http://example.com')
+        self.assertEqual(returned_resource.data, {})
 
     def test_resource_with_an_array_without_schema(self):
         data = {
@@ -314,13 +232,31 @@ class FromResponseTestCase(TestCase):
             ],
             u'name': u'registry',
         }
-        s = schema.Schema(
-            url='url',
+        s = Schema(
+            href='url',
             raw_schema={
                 'title': 'app schema',
                 'type': 'object',
                 'required': ['name'],
                 'properties': {'name': {'type': 'string'}}
-            })
-        response = Resource("url", data, s)
+            },
+            session=self.session)
+        response = self.resource_from_data("url", data, s)
         self.assertDictEqual(data, response.data)
+
+
+class ResourceFromDataTestCase(BaseTestCase):
+
+    def test_should_create_array_resource_from_list(self):
+        data = []
+        resource = self.resource_from_data('/', data=data)
+        self.assertIsInstance(resource, ArrayResource)
+        self.assertEqual(resource.url, '/')
+        self.assertEqual(resource.data, data)
+
+    def test_should_create_object_resource_from_dict(self):
+        data = {}
+        resource = self.resource_from_data('/', data=data)
+        self.assertIsInstance(resource, ObjectResource)
+        self.assertEqual(resource.url, '/')
+        self.assertEqual(resource.data, data)

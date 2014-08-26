@@ -1,100 +1,119 @@
 # -*- coding: utf-8 -*-
-import requests
 
-from jsonschema import validate, SchemaError, ValidationError
+import uritemplate
+import jsonpointer
 
-from pluct import schema
-from pluct.request import Request
+from jsonschema import SchemaError, validate, ValidationError
+
+from pluct import datastructures
 from pluct.schema import Schema
-from request import from_response
 
 
-class Resource(dict):
+class Resource(object):
 
-    def __init__(self, url, data=None, schema=None,
-                 auth=None, response=None, timeout=30):
-        self.auth = auth
+    def __init__(self, *args, **kwargs):
+        raise NotImplementedError(
+            'Use subclasses or Resource.from_data to initialize resources')
+
+    def init(self, url, data=None, schema=None, session=None):
         self.url = url
-        self.data = data
+        self.data = data or self.default_data()
         self.schema = schema
-        self.timeout = timeout
-        self.response = response
-        if self.schema and self.is_valid():
-            self.parse_data()
+        self.session = session
 
-    def __getattr__(self, name):
-        for link in getattr(self.schema, "links", []) or []:
-            method = link.get("method", "GET")
-            href = link.get("href")
-            if link.get('rel') == name:
-                method_class = Request(method, href, self.auth, self)
-                return method_class.process
-        return super(Resource, self).__getattribute__(name)
-
-    def __str__(self):
-        return str(self.data)
-
-    def __iter__(self):
-        return iter(self.data)
-
-    def __getitem__(self, attr):
-        if attr in self.data:
-            return self.data[attr]
-        raise KeyError
-
-    def __contains__(self, item):
-        return dict.__contains__(self.data, item)
+        self.parse_data()
 
     def is_valid(self):
         try:
-            validate(self.data, self.schema._raw_schema)
+            validate(self.data, self.schema.raw_schema)
         except (SchemaError, ValidationError):
             return False
         return True
 
-    def parse_data(self):
-        if not isinstance(self.data, dict):
-            return
+    def rel(self, name, **kwargs):
+        link = self.schema.get_link(name)
+        method = link.get('method', 'get')
+        href = link.get('href', '')
 
-        for key, value in self.data.items():
-            if not isinstance(value, list):
-                continue
+        params = kwargs.get('params', {})
+        context = dict(self.data, **params)
 
-            item_schema = self.schema.properties.get(key, {})
-            is_array = item_schema.get('type') == 'array'
+        variables = uritemplate.variables(href)
+        uri = uritemplate.expand(href, context)
 
-            if not is_array:
-                continue
+        if 'params' in kwargs:
+            unused_params = {
+                k: v for k, v in params.items() if k not in variables}
+            kwargs['params'] = unused_params
 
-            data_items = []
-            prop_items = item_schema.get('items', {})
+        return self.session.resource(uri, method=method, **kwargs)
 
-            if "$ref" in prop_items:
-                s = schema.get(prop_items['$ref'], self.auth)
-            else:
-                s = Schema(self.url, prop_items)
+    @classmethod
+    def from_data(cls, url, data=None, schema=None, session=None):
+        if isinstance(data, (list, tuple)):
+            klass = ArrayResource
+        elif isinstance(data, dict):
+            klass = ObjectResource
+        else:
+            return data
 
-            for item in value:
-                if not isinstance(item, dict):
-                    data_items.append(item)
-                    continue
+        return klass(
+            url, data=data, schema=schema, session=session)
 
-                data_items.append(
-                    Resource(
-                        self.url,
-                        data=item,
-                        schema=s,
-                    )
-                )
-
-            self.data[key] = data_items
-
-
-def get(url, auth=None, timeout=30):
-    headers = {'content-type': 'application/json'}
-    if auth:
-        headers['Authorization'] = '{0} {1}'.format(
-            auth['type'], auth['credentials']
+    @classmethod
+    def from_response(cls, response, session, schema):
+        try:
+            data = response.json()
+        except ValueError:
+            data = {}
+        return cls.from_data(
+            url=response.url,
+            data=data,
+            session=session,
+            schema=schema
         )
-    response = requests.get(url, headers=headers, timeout=timeout)
-    return from_response(Resource, response, auth)
+
+    def parse_data(self):
+        for key, value in self.iterate_items():
+            schema = self.item_schema(key)
+            self.data[key] = self.from_data(
+                self.url, data=value, schema=schema, session=self.session)
+
+    def resolve_pointer(self, *args, **kwargs):
+        return jsonpointer.resolve_pointer(self.data, *args, **kwargs)
+
+
+class ObjectResource(datastructures.IterableUserDict, Resource, dict):
+
+    SCHEMA_PREFIX = 'properties'
+
+    def __init__(self, *args, **kwargs):
+        self.init(*args, **kwargs)
+
+    def default_data(self):
+        return {}
+
+    def iterate_items(self):
+        return self.data.iteritems()
+
+    def item_schema(self, key):
+        href = '#/{0}/{1}'.format(self.SCHEMA_PREFIX, key)
+        return Schema(href, raw_schema=self.schema, session=self.session)
+
+
+class ArrayResource(datastructures.UserList, Resource, list):
+
+    SCHEMA_PREFIX = 'items'
+
+    def __init__(self, *args, **kwargs):
+        self.init(*args, **kwargs)
+
+    def default_data(self):
+        return []
+
+    def iterate_items(self):
+        return enumerate(self.data)
+
+    def item_schema(self, key):
+        href = '#/{0}'.format(self.SCHEMA_PREFIX)
+        return Schema(href, raw_schema=self.schema, session=self.session)

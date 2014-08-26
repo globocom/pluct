@@ -1,3 +1,2 @@
-include requirements.txt requirements_test.txt
 recursive-include pluct *.py
 prune pluct/tests
