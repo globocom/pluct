@@ -26,6 +26,13 @@ class BaseTestCase(TestCase):
         return resource
 
 
+class ResourceInitTestCase(BaseTestCase):
+
+    def test_blocks_init_of_base_class(self):
+        with self.assertRaises(NotImplementedError):
+            Resource()
+
+
 class ResourceTestCase(BaseTestCase):
 
     def setUp(self):
@@ -188,27 +195,6 @@ class ParseResourceTestCase(BaseTestCase):
         values = resource_list['values']
 
         self.assertEqual(values, data['values'])
-
-
-class ParseResourceWithExternalSchemaTestCase(BaseTestCase):
-
-    def setUp(self):
-        super(ParseResourceWithExternalSchemaTestCase, self).setUp()
-        self.item_schema_url = 'http://appurl.com/schema'
-        self.raw_schema = {
-            'title': "title",
-            'type': "object",
-
-            'properties': {
-                'objects': {
-                    'type': 'array',
-                    'items': {
-                        '$ref': self.item_schema_url
-                    }
-                }
-            }
-        }
-        self.schema = Schema(href="url.com", raw_schema=self.raw_schema)
 
 
 class FromResponseTestCase(BaseTestCase):
