@@ -7,9 +7,10 @@ setup(
     name='pluct',
     version='1.0.0-beta',
     description='JSON Hyper Schema client',
+    long_description=open('README.rst').read(),
     author='Marcos Daniel Petry',
     author_email='marcospetry@gmail.com',
-    url='git@github.com:globocom/pluct.git',
+    url='https://github.com/globocom/pluct',
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: No Input/Output (Daemon)',

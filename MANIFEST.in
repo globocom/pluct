@@ -1,2 +1,3 @@
+include README.rst
 recursive-include pluct *.py
 prune pluct/tests
