@@ -5,13 +5,13 @@ from setuptools import setup, find_packages
 
 setup(
     name='pluct',
-    version='0.7.0',
+    version='1.0.0-beta',
     description='JSON Hyper Schema client',
     author='Marcos Daniel Petry',
     author_email='marcospetry@gmail.com',
     url='git@github.com:globocom/pluct.git',
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Environment :: No Input/Output (Daemon)',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
