@@ -100,6 +100,12 @@ class ObjectResource(datastructures.IterableUserDict, Resource, dict):
         href = '#/{0}/{1}'.format(self.SCHEMA_PREFIX, key)
         return Schema(href, raw_schema=self.schema, session=self.session)
 
+    def __ne__(self, other):
+        return self.data != other
+
+    def __eq__(self, other):
+        return self.data == other
+
 
 class ArrayResource(datastructures.UserList, Resource, list):
 
