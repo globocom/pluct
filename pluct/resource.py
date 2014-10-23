@@ -36,10 +36,10 @@ class Resource(object):
         href = link.get('href', '')
 
         params = kwargs.get('params', {})
-        context = dict(self.data, **params)
 
         variables = uritemplate.variables(href)
-        uri = uritemplate.expand(href, context)
+
+        uri = self.expand_uri(name, **params)
 
         if 'params' in kwargs:
             unused_params = {
@@ -47,6 +47,18 @@ class Resource(object):
             kwargs['params'] = unused_params
 
         return self.session.resource(uri, method=method, **kwargs)
+
+    def has_rel(self, name):
+        link = self.schema.get_link(name)
+        return bool(link)
+
+    def expand_uri(self, name, **kwargs):
+        link = self.schema.get_link(name)
+        href = link.get('href', '')
+
+        context = dict(self.data, **kwargs)
+
+        return uritemplate.expand(href, context)
 
     @classmethod
     def from_data(cls, url, data=None, schema=None, session=None):
