@@ -45,14 +45,18 @@ class ResourceRelTestCase(TestCase):
     def tearDown(self):
         self.request_patcher.stop()
 
-    def test_expands_uri_return_interpolated_link(self):
+    def test_expand_uri_returns_simple_link(self):
         uri = self.resource.expand_uri('create')
         self.assertEqual(uri, '/root')
 
-    def test_exist_rel_in_schema(self):
+    def test_expand_uri_returns_interpolated_link(self):
+        uri = self.resource.expand_uri('related', related='foo')
+        self.assertEqual(uri, '/root/slug/foo')
+
+    def test_has_rel_finds_existent_link(self):
         self.assertTrue(self.resource.has_rel('create'))
 
-    def test_not_exist_rel_in_schema(self):
+    def test_has_rel_detects_unexistent_link(self):
         self.assertFalse(self.resource.has_rel('foo_bar'))
 
     def test_delegates_request_to_session(self):
