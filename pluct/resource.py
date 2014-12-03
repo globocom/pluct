@@ -23,13 +23,12 @@ class Resource(object):
 
         self.parse_data()
 
-    def _get_is_valid_request_method(self):
-        return lambda url: self.session.request(url).json()
+    def session_request_json(self, url):
+        return self.session.request(url).json()
 
     def is_valid(self):
-        request_method = self._get_is_valid_request_method()
-        handlers = {'https': request_method,
-                    'http': request_method}
+        handlers = {'https': self.session_request_json,
+                    'http': self.session_request_json}
         resolver = RefResolver.from_schema(self.schema.raw_schema,
                                            handlers=handlers)
         try:

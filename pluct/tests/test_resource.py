@@ -3,7 +3,6 @@
 from unittest import TestCase
 from jsonschema import RefResolver
 from mock import patch, Mock
-from types import LambdaType
 
 from pluct.resource import Resource, ObjectResource, ArrayResource
 from pluct.session import Session
@@ -126,18 +125,16 @@ class ResourceTestCase(BaseTestCase):
             resolver = mock_validate.call_args[-1]['resolver']
             self.assertIsInstance(resolver, RefResolver)
 
-            request_method = resolver.handlers['http']
-            self.assertIsInstance(request_method, LambdaType)
-            self.assertIsInstance(resolver.handlers['https'], LambdaType)
+            http_handler, https_handler = resolver.handlers.values()
+            self.assertEquals(http_handler, self.result.session_request_json)
+            self.assertEquals(https_handler, self.result.session_request_json)
 
-    def test_is_valid_request_method(self):
-        request_method = self.result._get_is_valid_request_method()
-
+    def test_session_request_json(self):
         mock_request_return = Mock()
         with patch.object(self.result.session, 'request') as mock_request:
             mock_request.return_value = mock_request_return
 
-            request_method(self.url)
+            self.result.session_request_json(self.url)
             self.assertTrue(mock_request.called)
             self.assertTrue(mock_request_return.json.called)
 
