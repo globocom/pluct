@@ -1,4 +1,4 @@
-1.1.0
+1.2.0
 ====
 
 - jsonschema validate method must use the pluct Session object to schema ref resolving
