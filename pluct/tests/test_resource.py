@@ -141,6 +141,7 @@ class ResourceTestCase(BaseTestCase):
             self.assertTrue(mock_request.called)
             self.assertTrue(mock_request_return.json.called)
 
+
 class ParseResourceTestCase(BaseTestCase):
 
     def setUp(self):
