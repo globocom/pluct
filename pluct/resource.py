@@ -3,7 +3,7 @@
 import uritemplate
 import jsonpointer
 
-from jsonschema import SchemaError, validate, ValidationError
+from jsonschema import SchemaError, validate, ValidationError, RefResolver
 
 from pluct import datastructures
 from pluct.schema import Schema
@@ -23,9 +23,17 @@ class Resource(object):
 
         self.parse_data()
 
+    def _get_is_valid_request_method(self):
+        return lambda url: self.session.request(url).json()
+
     def is_valid(self):
+        request_method = self._get_is_valid_request_method()
+        handlers = {'https': request_method,
+                    'http': request_method}
+        resolver = RefResolver.from_schema(self.schema.raw_schema,
+                                           handlers=handlers)
         try:
-            validate(self.data, self.schema.raw_schema)
+            validate(self.data, self.schema.raw_schema, resolver=resolver)
         except (SchemaError, ValidationError):
             return False
         return True

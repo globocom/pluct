@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
-
 from unittest import TestCase
+from jsonschema import RefResolver
 from mock import patch, Mock
+from types import LambdaType
 
 from pluct.resource import Resource, ObjectResource, ArrayResource
 from pluct.session import Session
@@ -42,7 +43,7 @@ class ResourceTestCase(BaseTestCase):
             "name": "repos",
             "platform": "js",
         }
-        raw_schema = {
+        self.raw_schema = {
             'type': "object",
             'required': ["platform"],
             'title': "some title",
@@ -63,7 +64,7 @@ class ResourceTestCase(BaseTestCase):
                 }
             ]}
         self.schema = Schema(
-            href="url.com", raw_schema=raw_schema, session=self.session)
+            href="url.com", raw_schema=self.raw_schema, session=self.session)
 
         self.url = "http://app.com/content"
 
@@ -117,6 +118,28 @@ class ResourceTestCase(BaseTestCase):
     def test_resource_should_be_instance_of_schema(self):
         self.assertIsInstance(self.result, Resource)
 
+    def test_is_valid_call_validate_with_resolver_instance(self):
+        with patch('pluct.resources.validate') as mock_validate:
+            self.result.is_valid()
+            self.assertTrue(mock_validate.called)
+
+            resolver = mock_validate.call_args[-1]['resolver']
+            self.assertIsInstance(resolver, RefResolver)
+
+            request_method = resolver.handlers['http']
+            self.assertIsInstance(request_method, LambdaType)
+            self.assertIsInstance(resolver.handlers['https'], LambdaType)
+
+    def test_is_valid_request_method(self):
+        request_method = self.result._get_is_valid_request_method()
+
+        mock_request_return = Mock()
+        with patch.object(self.result.session, 'request') as mock_request:
+            mock_request.return_value = mock_request_return
+
+            request_method(self.url)
+            self.assertTrue(mock_request.called)
+            self.assertTrue(mock_request_return.json.called)
 
 class ParseResourceTestCase(BaseTestCase):
 
