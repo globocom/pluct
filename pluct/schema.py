@@ -50,8 +50,10 @@ class Schema(IterableUserDict, object):
             return
 
         for key, value in iterator:
-            key_ref_in_dict = (self._is_simple_dict(value)
-                               and ('$ref' in value))
+            key_ref_in_dict = (
+                self._is_simple_dict(value) and ('$ref' in value)
+            )
+
             if key_ref_in_dict:
                 item[key] = self.from_href(
                     value['$ref'], raw_schema=self._raw_schema,
