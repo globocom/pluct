@@ -2,6 +2,7 @@
 
 import uritemplate
 import jsonpointer
+import urlparse
 
 from jsonschema import SchemaError, validate, ValidationError, RefResolver
 
@@ -47,6 +48,9 @@ class Resource(object):
         variables = uritemplate.variables(href)
 
         uri = self.expand_uri(name, **params)
+
+        if not urlparse.urlparse(uri).netloc:
+            uri = urlparse.urljoin(self.url, uri)
 
         if 'params' in kwargs:
             unused_params = {

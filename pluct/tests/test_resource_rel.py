@@ -37,7 +37,9 @@ class ResourceRelTestCase(TestCase):
         self.session = Session()
         self.schema = Schema('/schema', raw_schema, session=self.session)
         self.resource = Resource.from_data(
-            '/', data=data, schema=self.schema, session=self.session)
+            'http://much.url.com/',
+            data=data, schema=self.schema, session=self.session
+        )
 
         self.request_patcher = patch.object(self.session, 'request')
         self.request = self.request_patcher.start()
@@ -61,30 +63,43 @@ class ResourceRelTestCase(TestCase):
 
     def test_delegates_request_to_session(self):
         self.resource.rel('create')
-        self.request.assert_called_with('/root', method='post')
+        self.request.assert_called_with(
+            'http://much.url.com/root', method='post'
+        )
 
     def test_accepts_extra_parameters(self):
         self.resource.rel('create', timeout=333)
-        self.request.assert_called_with('/root', method='post', timeout=333)
+        self.request.assert_called_with(
+            'http://much.url.com/root', method='post', timeout=333
+        )
 
     def test_uses_get_as_default_verb(self):
         self.resource.rel('list')
-        self.request.assert_called_with('/root', method='get')
+        self.request.assert_called_with(
+            'http://much.url.com/root', method='get'
+        )
 
     def test_expands_uri_using_resource_data(self):
         self.resource.rel('item')
-        self.request.assert_called_with('/root/123', method='get')
+        self.request.assert_called_with(
+            'http://much.url.com/root/123', method='get'
+        )
 
     def test_expands_uri_using_params(self):
         self.resource.rel('item', params={'id': 345})
-        self.request.assert_called_with('/root/345', method='get', params={})
+        self.request.assert_called_with(
+            'http://much.url.com/root/345', method='get', params={}
+        )
 
     def test_expands_uri_using_resource_data_and_params(self):
         self.resource.rel('related', params={'related': 'something'})
         self.request.assert_called_with(
-            '/root/slug/something', method='get', params={})
+            'http://much.url.com/root/slug/something', method='get', params={}
+        )
 
     def test_extracts_expanded_params_from_the_uri(self):
         self.resource.rel('item', params={'id': 345, 'fields': 'slug'})
         self.request.assert_called_with(
-            '/root/345', method='get', params={'fields': 'slug'})
+            'http://much.url.com/root/345',
+            method='get', params={'fields': 'slug'}
+        )
