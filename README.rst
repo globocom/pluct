@@ -114,6 +114,14 @@ in the ``params`` argument, as follows:
 
     galleries = item.rel('search', params={'type': 'gallery', 'q': 'foo'})
 
+To send your own body data you can send the object as data. This will follow 
+your method (PUT, POST, GET or DELETE) with all data from object:
+
+.. code:: python
+
+    galleries = item.rel('create', data=item)
+    
+
 Schema loading
 --------------
 
