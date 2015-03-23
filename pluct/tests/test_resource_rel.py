@@ -2,6 +2,7 @@
 
 from unittest import TestCase
 from mock import patch
+from copy import deepcopy
 
 from pluct.resource import Resource
 from pluct.schema import Schema
@@ -24,7 +25,7 @@ class ResourceRelTestCase(TestCase):
                 {
                     'rel': 'create',
                     'href': '/root',
-                    'method': 'post',
+                    'method': 'POST',
                 },
                 {
                     'rel': 'list',
@@ -32,13 +33,16 @@ class ResourceRelTestCase(TestCase):
                 }
             ]
         }
-        data = {'id': '123', 'slug': 'slug'}
+        self.data = {'id': '123',
+                     'slug': 'slug',
+                     'items': [{"ide": 1},
+                               {"ida": 2}]}
 
         self.session = Session()
         self.schema = Schema('/schema', raw_schema, session=self.session)
         self.resource = Resource.from_data(
             'http://much.url.com/',
-            data=data, schema=self.schema, session=self.session
+            data=deepcopy(self.data), schema=self.schema, session=self.session
         )
 
         self.request_patcher = patch.object(self.session, 'request')
@@ -62,15 +66,22 @@ class ResourceRelTestCase(TestCase):
         self.assertFalse(self.resource.has_rel('foo_bar'))
 
     def test_delegates_request_to_session(self):
-        self.resource.rel('create')
+        self.resource.rel('create', data=self.resource)
         self.request.assert_called_with(
-            'http://much.url.com/root', method='post'
+            'http://much.url.com/root',
+            method='post',
+            data=self.data,
+            headers={'content-type': 'application/json; profile=/schema'}
         )
 
     def test_accepts_extra_parameters(self):
-        self.resource.rel('create', timeout=333)
+        self.resource.rel('create', data=self.resource, timeout=333)
         self.request.assert_called_with(
-            'http://much.url.com/root', method='post', timeout=333
+            'http://much.url.com/root',
+            method='post',
+            data=self.data,
+            headers={'content-type': 'application/json; profile=/schema'},
+            timeout=333
         )
 
     def test_uses_get_as_default_verb(self):

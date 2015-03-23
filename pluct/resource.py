@@ -22,8 +22,6 @@ class Resource(object):
         self.schema = schema
         self.session = session
 
-        self.parse_data()
-
     def session_request_json(self, url):
         return self.session.request(url).json()
 
@@ -40,7 +38,7 @@ class Resource(object):
 
     def rel(self, name, **kwargs):
         link = self.schema.get_link(name)
-        method = link.get('method', 'get')
+        method = link.get('method', 'get').lower()
         href = link.get('href', '')
 
         params = kwargs.get('params', {})
@@ -51,12 +49,19 @@ class Resource(object):
 
         if not urlparse.urlparse(uri).netloc:
             uri = urlparse.urljoin(self.url, uri)
-
         if 'params' in kwargs:
             unused_params = {
                 k: v for k, v in params.items() if k not in variables}
             kwargs['params'] = unused_params
 
+        if "data" in kwargs and isinstance(kwargs.get("data"), Resource):
+            resource = kwargs.get("data")
+            kwargs["data"] = resource.data
+            schema_uri = resource.schema.url
+            headers = kwargs.get('headers', {})
+            headers.setdefault('content-type',
+                               'application/json; profile=' + schema_uri)
+            kwargs['headers'] = headers
         return self.session.resource(uri, method=method, **kwargs)
 
     def has_rel(self, name):
@@ -96,14 +101,15 @@ class Resource(object):
             schema=schema
         )
 
-    def parse_data(self):
-        for key, value in self.iterate_items():
-            schema = self.item_schema(key)
-            self.data[key] = self.from_data(
-                self.url, data=value, schema=schema, session=self.session)
-
     def resolve_pointer(self, *args, **kwargs):
         return jsonpointer.resolve_pointer(self.data, *args, **kwargs)
+
+    def __getitem__(self, item):
+        schema = self.item_schema(item)
+        return self.from_data(self.url,
+                              data=self.data[item],
+                              schema=schema,
+                              session=self.session)
 
 
 class ObjectResource(datastructures.IterableUserDict, Resource, dict):
@@ -129,6 +135,9 @@ class ObjectResource(datastructures.IterableUserDict, Resource, dict):
     def __eq__(self, other):
         return self.data == other
 
+    def __getitem__(self, item):
+        return Resource.__getitem__(self, item)
+
 
 class ArrayResource(datastructures.UserList, Resource, list):
 
@@ -146,3 +155,6 @@ class ArrayResource(datastructures.UserList, Resource, list):
     def item_schema(self, key):
         href = '#/{0}'.format(self.SCHEMA_PREFIX)
         return Schema(href, raw_schema=self.schema, session=self.session)
+
+    def __getitem__(self, item):
+        return Resource.__getitem__(self, item)

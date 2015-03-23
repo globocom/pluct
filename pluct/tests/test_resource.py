@@ -183,8 +183,7 @@ class ParseResourceTestCase(BaseTestCase):
         }
         app = self.resource_from_data(
             url="appurl.com", data=data, schema=self.schema)
-        item = app.data['objects'][0]
-
+        item = app['objects'][0]
         self.assertIsInstance(item, ObjectResource)
         self.assertEqual(item.data['id'], 111)
         self.assertEqual(item.schema, self.item_schema)
