@@ -85,7 +85,7 @@ schema snippets:
 .. code:: json
 
     {
-        "...": "..."
+        "...": "...",
         "links": [
             {
                 "rel": "search",
