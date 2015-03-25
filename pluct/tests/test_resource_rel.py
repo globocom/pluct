@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import json
+
 from unittest import TestCase
 from mock import patch
 from copy import deepcopy
@@ -70,7 +72,7 @@ class ResourceRelTestCase(TestCase):
         self.request.assert_called_with(
             'http://much.url.com/root',
             method='post',
-            data=self.data,
+            data=json.dumps(self.data),
             headers={'content-type': 'application/json; profile=/schema'}
         )
 
@@ -79,7 +81,7 @@ class ResourceRelTestCase(TestCase):
         self.request.assert_called_with(
             'http://much.url.com/root',
             method='post',
-            data=self.data,
+            data=json.dumps(self.data),
             headers={'content-type': 'application/json; profile=/schema'},
             timeout=333
         )

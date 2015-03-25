@@ -3,6 +3,7 @@
 import uritemplate
 import jsonpointer
 import urlparse
+import json
 
 from jsonschema import SchemaError, validate, ValidationError, RefResolver
 
@@ -56,7 +57,7 @@ class Resource(object):
 
         if "data" in kwargs and isinstance(kwargs.get("data"), Resource):
             resource = kwargs.get("data")
-            kwargs["data"] = resource.data
+            kwargs["data"] = json.dumps(resource.data)
             schema_uri = resource.schema.url
             headers = kwargs.get('headers', {})
             headers.setdefault('content-type',
