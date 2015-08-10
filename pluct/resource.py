@@ -55,14 +55,22 @@ class Resource(object):
                 k: v for k, v in params.items() if k not in variables}
             kwargs['params'] = unused_params
 
-        if "data" in kwargs and isinstance(kwargs.get("data"), Resource):
+        if "data" in kwargs:
             resource = kwargs.get("data")
-            kwargs["data"] = json.dumps(resource.data)
-            schema_uri = resource.schema.url
             headers = kwargs.get('headers', {})
-            headers.setdefault('content-type',
-                               'application/json; profile=' + schema_uri)
+
+            if isinstance(resource, Resource):
+                kwargs["data"] = json.dumps(resource.data)
+                schema_uri = resource.schema.url
+                headers.setdefault('content-type',
+                                   'application/json; profile=' + schema_uri)
+
+            elif isinstance(resource, dict):
+                kwargs["data"] = json.dumps(resource)
+                headers.setdefault('content-type', 'application/json')
+
             kwargs['headers'] = headers
+
         return self.session.resource(uri, method=method, **kwargs)
 
     def has_rel(self, name):
