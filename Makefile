@@ -1,3 +1,5 @@
+BUMP := 'patch'
+
 help:
 	@grep '^[^#[:space:]].*:' Makefile | awk -F ":" '{print $$1}'
 
@@ -8,6 +10,18 @@ deps:
 	@pip install -r requirements_test.txt
 
 setup: deps
+
+patch:
+	@$(eval BUMP := 'patch')
+
+minor:
+	@$(eval BUMP := 'minor')
+
+major:
+	@$(eval BUMP := 'major')
+
+bump:
+	@bumpversion ${BUMP}
 
 release:
 	@echo 'PyPI server: '; read PYPI_SERVER; \
