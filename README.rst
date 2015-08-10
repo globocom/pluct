@@ -5,10 +5,6 @@ pluct
     :target: https://travis-ci.org/globocom/pluct
     :alt: Travis CI Build Status
     
-.. image:: https://travis-ci.org/globocom/pluct.png?branch=master
-    :target: https://travis-ci.org/globocom/pluct
-    :alt: Travis Build Status
-
 A JSON Hyper Schema client that allows hypermedia navigation and
 resource validation.
 
