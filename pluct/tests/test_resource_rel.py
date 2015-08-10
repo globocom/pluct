@@ -86,6 +86,16 @@ class ResourceRelTestCase(TestCase):
             timeout=333
         )
 
+    def test_accepts_dict(self):
+        resource = {'name': 'Testing'}
+        self.resource.rel('create', data=resource)
+        self.request.assert_called_with(
+            'http://much.url.com/root',
+            method='post',
+            data=json.dumps(resource),
+            headers={'content-type': 'application/json'}
+        )
+
     def test_uses_get_as_default_verb(self):
         self.resource.rel('list')
         self.request.assert_called_with(
