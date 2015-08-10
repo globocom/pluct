@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='pluct',
-    version='1.2.3',
+    version='1.2.4',
     description='JSON Hyper Schema client',
     long_description=open('README.rst').read(),
     author='Marcos Daniel Petry',
