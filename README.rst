@@ -1,10 +1,10 @@
 pluct
 =====
 
-.. image:: https://drone.io/github.com/globocom/pluct/status.png
-    :target: https://drone.io/github.com/globocom/pluct/latest
-    :alt: Drone.io Build Status
-
+.. image:: https://travis-ci.org/globocom/pluct.svg
+    :target: https://travis-ci.org/globocom/pluct
+    :alt: Travis CI Build Status
+    
 .. image:: https://travis-ci.org/globocom/pluct.png?branch=master
     :target: https://travis-ci.org/globocom/pluct
     :alt: Travis Build Status
