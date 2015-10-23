@@ -16,7 +16,7 @@ Basic Usage
     import pluct
 
     # Load a resource
-    item = pluct.resource('http://myapi.com/api/item')
+    item = pluct.resource('http://myapi.com/api/item', timeout=2)  # Works with connect timeout
 
     # Verifying if the resource is valid for the current schema
     item.is_valid()
@@ -29,6 +29,9 @@ Basic Usage
 
     # Loading a related resource
     category = item.rel('category')
+    
+    # With additional parameters
+    category = item.rel('category', timeout=(1, 2))  # You can choose from request parameters: http://docs.python-requests.org/en/latest/api/#requests.Session.request
 
 Authentication / Custom HTTP Client
 -----------------------------------
