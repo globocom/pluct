@@ -14,9 +14,10 @@ class BaseTestCase(TestCase):
     def setUp(self):
         self.session = Session()
 
-    def resource_from_data(self, url, data=None, schema=None):
+    def resource_from_data(self, url, data=None, schema=None, response=None):
         resource = Resource.from_data(
-            url=url, data=data, schema=schema, session=self.session)
+            url=url, data=data, schema=schema, session=self.session,
+            response=response)
         return resource
 
     def resource_from_response(self, response, schema):
@@ -82,6 +83,9 @@ class ResourceTestCase(BaseTestCase):
 
     def test_data(self):
         self.assertEqual(self.data, self.result.data)
+
+    def test_response(self):
+        self.assertEqual(self.result.response, None)
 
     def test_iter(self):
         iterated = [i for i in self.result]
@@ -258,6 +262,14 @@ class FromResponseTestCase(BaseTestCase):
             self._response, schema=self.schema)
         self.assertEqual(returned_resource.url, 'http://example.com')
         self.assertEqual(returned_resource.data, {})
+
+    def test_should_return_resource_from_response_with_response_data(self):
+        self._response.json.return_value = {}
+        returned_resource = self.resource_from_response(
+            self._response, schema=self.schema)
+        self.assertEqual(returned_resource.response, self._response)
+        self.assertEqual(returned_resource.response.headers,
+                         self._response.headers)
 
     def test_resource_with_an_array_without_schema(self):
         data = {
