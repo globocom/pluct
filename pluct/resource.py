@@ -17,11 +17,12 @@ class Resource(object):
         raise NotImplementedError(
             'Use subclasses or Resource.from_data to initialize resources')
 
-    def init(self, url, data=None, schema=None, session=None):
+    def init(self, url, data=None, schema=None, session=None, response=None):
         self.url = url
         self.data = data or self.default_data()
         self.schema = schema
         self.session = session
+        self.response = response
 
     def session_request_json(self, url):
         return self.session.request(url).json()
@@ -86,7 +87,8 @@ class Resource(object):
         return uritemplate.expand(href, context)
 
     @classmethod
-    def from_data(cls, url, data=None, schema=None, session=None):
+    def from_data(cls, url, data=None, schema=None, session=None,
+                  response=None):
         if isinstance(data, (list, tuple)):
             klass = ArrayResource
         elif isinstance(data, dict):
@@ -95,7 +97,7 @@ class Resource(object):
             return data
 
         return klass(
-            url, data=data, schema=schema, session=session)
+            url, data=data, schema=schema, session=session, response=response)
 
     @classmethod
     def from_response(cls, response, session, schema):
@@ -107,7 +109,8 @@ class Resource(object):
             url=response.url,
             data=data,
             session=session,
-            schema=schema
+            schema=schema,
+            response=response
         )
 
     def resolve_pointer(self, *args, **kwargs):
