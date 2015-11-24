@@ -26,6 +26,8 @@ bump:
 release:
 	@echo 'PyPI server: '; read PYPI_SERVER; \
 		python setup.py -q sdist upload -r $$PYPI_SERVER
+	@git push
+	@git push --tags
 
 coverage_html:
 	@coverage html --include='pluct/**'
