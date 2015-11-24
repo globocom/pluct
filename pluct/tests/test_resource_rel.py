@@ -3,7 +3,7 @@
 import json
 
 from unittest import TestCase
-from mock import patch
+from mock import patch, Mock
 from copy import deepcopy
 
 from pluct.resource import Resource
@@ -42,9 +42,26 @@ class ResourceRelTestCase(TestCase):
 
         self.session = Session()
         self.schema = Schema('/schema', raw_schema, session=self.session)
+
+        self.response = Mock()
+        self.response.url = 'http://example.com'
+
+        self.profile_url = 'http://example.com/schema'
+
+        content_type = 'application/json; profile=%s' % (self.profile_url)
+        self.response.headers = {
+            'content-type': content_type
+        }
+
         self.resource = Resource.from_data(
             'http://much.url.com/',
             data=deepcopy(self.data), schema=self.schema, session=self.session
+        )
+
+        self.resource2 = Resource.from_data(
+            'http://much.url.com/',
+            data=deepcopy(self.data), schema=self.schema,
+            session=self.session, response=self.response
         )
 
         self.request_patcher = patch.object(self.session, 'request')
@@ -52,6 +69,25 @@ class ResourceRelTestCase(TestCase):
 
     def tearDown(self):
         self.request_patcher.stop()
+
+    def test_rel_follows_content_type_profile(self):
+        self.resource2.rel('create', data=self.resource2)
+        self.request.assert_called_with(
+            'http://much.url.com/root',
+            method='post',
+            data=json.dumps(self.data),
+            headers=self.response.headers
+        )
+
+    def test_get_content_type_for_resource_default(self):
+        content_type = self.resource._get_content_type_for_resource(
+            self.resource)
+        self.assertEqual(content_type, 'application/json; profile=/schema')
+
+    def test_get_content_type_for_resource_with_response(self):
+        content_type = self.resource2._get_content_type_for_resource(
+            self.resource2)
+        self.assertEqual(content_type, self.response.headers['content-type'])
 
     def test_expand_uri_returns_simple_link(self):
         uri = self.resource.expand_uri('create')
