@@ -17,12 +17,14 @@ class Resource(object):
         raise NotImplementedError(
             'Use subclasses or Resource.from_data to initialize resources')
 
-    def init(self, url, data=None, schema=None, session=None, response=None):
+    def init(self, url, data=None, schema=None, session=None, response=None,
+             headers=None):
         self.url = url
         self.data = data or self.default_data()
         self.schema = schema
         self.session = session
         self.response = response
+        self.headers = headers
 
     def session_request_json(self, url):
         return self.session.request(url).json()
@@ -62,9 +64,9 @@ class Resource(object):
 
             if isinstance(resource, Resource):
                 kwargs["data"] = json.dumps(resource.data)
-                schema_uri = resource.schema.url
-                headers.setdefault('content-type',
-                                   'application/json; profile=' + schema_uri)
+                headers.setdefault(
+                    'content-type',
+                    self._get_content_type_for_resource(resource))
 
             elif isinstance(resource, dict):
                 kwargs["data"] = json.dumps(resource)
@@ -73,6 +75,14 @@ class Resource(object):
             kwargs['headers'] = headers
 
         return self.session.resource(uri, method=method, **kwargs)
+
+    def _get_content_type_for_resource(self, resource):
+        response = resource.response
+        if (response and response.headers and
+                response.headers.get('content-type')):
+            return resource.response.headers['content-type']
+        else:
+            return 'application/json; profile=' + resource.schema.url
 
     def has_rel(self, name):
         link = self.schema.get_link(name)
@@ -88,7 +98,7 @@ class Resource(object):
 
     @classmethod
     def from_data(cls, url, data=None, schema=None, session=None,
-                  response=None):
+                  response=None, headers=None):
         if isinstance(data, (list, tuple)):
             klass = ArrayResource
         elif isinstance(data, dict):
@@ -97,7 +107,8 @@ class Resource(object):
             return data
 
         return klass(
-            url, data=data, schema=schema, session=session, response=response)
+            url, data=data, schema=schema, session=session, response=response,
+            headers=headers)
 
     @classmethod
     def from_response(cls, response, session, schema):
@@ -110,7 +121,8 @@ class Resource(object):
             data=data,
             session=session,
             schema=schema,
-            response=response
+            response=response,
+            headers=response.headers
         )
 
     def resolve_pointer(self, *args, **kwargs):
