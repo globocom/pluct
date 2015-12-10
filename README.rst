@@ -4,7 +4,7 @@ pluct
 .. image:: https://travis-ci.org/globocom/pluct.svg
     :target: https://travis-ci.org/globocom/pluct
     :alt: Travis CI Build Status
-    
+
 A JSON Hyper Schema client that allows hypermedia navigation and
 resource validation.
 
@@ -29,7 +29,7 @@ Basic Usage
 
     # Loading a related resource
     category = item.rel('category')
-    
+
     # With additional parameters
     category = item.rel('category', timeout=(1, 2))  # You can choose from request parameters: http://docs.python-requests.org/en/latest/api/#requests.Session.request
 
@@ -113,13 +113,13 @@ in the ``params`` argument, as follows:
 
     galleries = item.rel('search', params={'type': 'gallery', 'q': 'foo'})
 
-To send your own body data you can send the object as data. This will follow 
+To send your own body data you can send the object as data. This will follow
 your method (PUT, POST, GET or DELETE) with all data from object:
 
 .. code:: python
 
     galleries = item.rel('create', data=item)
-    
+
 
 Schema loading
 --------------
