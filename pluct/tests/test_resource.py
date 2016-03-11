@@ -79,7 +79,8 @@ class ResourceTestCase(BaseTestCase):
             self.result.not_found
 
     def test_str(self):
-        self.assertEqual(str(self.data), str(self.result))
+        expected = "<Pluct ObjectResource %s>" % self.data
+        self.assertEqual(expected, str(self.result))
 
     def test_data(self):
         self.assertEqual(self.data, self.result.data)
@@ -299,6 +300,8 @@ class ResourceFromDataTestCase(BaseTestCase):
         self.assertIsInstance(resource, ArrayResource)
         self.assertEqual(resource.url, '/')
         self.assertEqual(resource.data, data)
+        expected = "<Pluct ArrayResource %s>" % resource.data
+        self.assertEqual(expected, str(resource))
 
     def test_should_create_object_resource_from_dict(self):
         data = {}

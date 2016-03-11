@@ -162,6 +162,9 @@ class ObjectResource(datastructures.IterableUserDict, Resource, dict):
     def __getitem__(self, item):
         return Resource.__getitem__(self, item)
 
+    def __repr__(self):
+        return "<Pluct ObjectResource %s>" % self.data
+
 
 class ArrayResource(datastructures.UserList, Resource, list):
 
@@ -182,3 +185,6 @@ class ArrayResource(datastructures.UserList, Resource, list):
 
     def __getitem__(self, item):
         return Resource.__getitem__(self, item)
+
+    def __repr__(self):
+        return "<Pluct ArrayResource %s>" % self.data
