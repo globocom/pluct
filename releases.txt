@@ -1,9 +1,0 @@
-1.2.0
-====
-
-- jsonschema validate method must use the pluct Session object to schema ref resolving
-
-0.5.0
-=====
-
-- Upgrading dependencies for modules uritemplate and jsonschema
