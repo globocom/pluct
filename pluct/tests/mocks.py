@@ -40,41 +40,41 @@ class ResourceSchemaMock(mock.MagicMock):
     }
     status_code = 200
     json = {
-        u'links': [
+        'links': [
             {
-                u'href': 'http://my-awesome-api.com/g1/' +
-                         'airports/{resource_id}',
-                u'rel': u'item'
+                'href': 'http://my-awesome-api.com/g1/' +
+                        'airports/{resource_id}',
+                'rel': 'item'
             },
             {
-                u'href': 'http://my-awesome-api.com/g1/' +
-                         'airports/{resource_id}',
-                u'method': u'PATCH',
-                u'rel': u'edit'
+                'href': 'http://my-awesome-api.com/g1/' +
+                        'airports/{resource_id}',
+                'method': 'PATCH',
+                'rel': 'edit'
             },
             {
-                u'href': 'http://my-awesome-api.com/g1/' +
-                         'airports/{resource_id}',
-                u'method': u'PUT',
-                u'rel': u'replace'
+                'href': 'http://my-awesome-api.com/g1/' +
+                        'airports/{resource_id}',
+                'method': 'PUT',
+                'rel': 'replace'
             },
             {
-                u'href': 'http://my-awesome-api.com/g1/' +
-                         'airports/{resource_id}',
-                u'method': u'DELETE',
-                u'rel': u'delete'
+                'href': 'http://my-awesome-api.com/g1/' +
+                        'airports/{resource_id}',
+                'method': 'DELETE',
+                'rel': 'delete'
             },
             {
-                u'href': u'http://my-awesome-api.com/g1/airports',
-                u'rel': u'self'
+                'href': 'http://my-awesome-api.com/g1/airports',
+                'rel': 'self'
             },
             {
-                u'href': u'http://my-awesome-api.com/g1/airports',
-                u'method': u'POST',
-                u'rel': u'create'
+                'href': 'http://my-awesome-api.com/g1/airports',
+                'method': 'POST',
+                'rel': 'create'
             }
         ],
-        u'item_count': 2
+        'item_count': 2
     }
 
     @property
@@ -91,16 +91,16 @@ class ResourceItemsMock(mock.MagicMock):
         {
             'items': [
                 {
-                    u'name': u"Rio de Janeiro",
-                    u'resource_id': u"rio-de-janeiro"
+                    'name': "Rio de Janeiro",
+                    'resource_id': "rio-de-janeiro"
                 },
                 {
-                    u'name': u"São Paulo",
-                    u'resource_id': u"sao-paulo"
+                    'name': "São Paulo",
+                    'resource_id': "sao-paulo"
                 },
                 {
-                    u'name': u"Recife",
-                    u'resource_id': u"recife"
+                    'name': "Recife",
+                    'resource_id': "recife"
                 },
             ],
         }

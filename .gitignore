@@ -6,3 +6,4 @@ pluct.egg-info/
 .coverage
 dist/
 htmlcov/
+__pycache__

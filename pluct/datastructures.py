@@ -3,7 +3,7 @@
 try:
     from UserDict import IterableUserDict
 except ImportError:
-    from collections import IterableUserDict  # noqa
+    from collections import UserDict as IterableUserDict  # noqa
 
 try:
     from UserList import UserList

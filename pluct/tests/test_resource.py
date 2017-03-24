@@ -48,8 +48,8 @@ class ResourceTestCase(BaseTestCase):
             'required': ["platform"],
             'title': "some title",
             'properties': {
-                u'name': {u'type': u'string'},
-                u'platform': {u'type': u'string'}
+                'name': {'type': 'string'},
+                'platform': {'type': 'string'}
             },
             'links': [
                 {
@@ -90,7 +90,7 @@ class ResourceTestCase(BaseTestCase):
 
     def test_iter(self):
         iterated = [i for i in self.result]
-        self.assertEqual(iterated, self.data.keys())
+        self.assertEqual(iterated, list(self.data.keys()))
 
     def test_schema(self):
         self.assertEqual(self.schema.url, self.result.schema.url)
@@ -105,7 +105,7 @@ class ResourceTestCase(BaseTestCase):
 
     def test_is_valid_invalid(self):
         data = {
-            u'doestnotexists': u'repos',
+            'doestnotexists': 'repos',
         }
         result = self.resource_from_data('/url', data=data, schema=self.schema)
         self.assertFalse(result.is_valid())
@@ -130,9 +130,9 @@ class ResourceTestCase(BaseTestCase):
             resolver = mock_validate.call_args[-1]['resolver']
             self.assertIsInstance(resolver, RefResolver)
 
-            http_handler, https_handler = resolver.handlers.values()
-            self.assertEquals(http_handler, self.result.session_request_json)
-            self.assertEquals(https_handler, self.result.session_request_json)
+            http_handler, https_handler = list(resolver.handlers.values())
+            self.assertEqual(http_handler, self.result.session_request_json)
+            self.assertEqual(https_handler, self.result.session_request_json)
 
     def test_session_request_json(self):
         mock_request_return = Mock()
@@ -168,12 +168,12 @@ class ParseResourceTestCase(BaseTestCase):
             'type': "object",
 
             'properties': {
-                u'objects': {
-                    u'type': u'array',
-                    u'items': self.item_schema,
+                'objects': {
+                    'type': 'array',
+                    'items': self.item_schema,
                 },
-                u'values': {
-                    u'type': u'array'
+                'values': {
+                    'type': 'array'
                 }
             }
         }
@@ -193,7 +193,7 @@ class ParseResourceTestCase(BaseTestCase):
         self.assertEqual(item.data['id'], 111)
         self.assertEqual(item.schema, self.item_schema)
 
-    def test_eq_and_ne_operators(self):
+    def test_eq_operators(self):
         data = {
             'objects': [
                 {'id': 111}
@@ -202,10 +202,7 @@ class ParseResourceTestCase(BaseTestCase):
         app = self.resource_from_data(
             url="appurl.com", data=data, schema=self.schema)
 
-        # Uses __eq__
-        self.assertDictContainsSubset(dict(objects=[dict(id=111)]), app)
-        # Uses __ne__
-        self.assertDictEqual(dict(objects=[dict(id=111)]), app)
+        self.assertDictEqual(data, app)
 
     def test_wraps_array_objects_as_resources_even_without_items_key(self):
         data = {
@@ -274,10 +271,10 @@ class FromResponseTestCase(BaseTestCase):
 
     def test_resource_with_an_array_without_schema(self):
         data = {
-            u'units': [
-                {u'name': u'someunit'}
+            'units': [
+                {'name': 'someunit'}
             ],
-            u'name': u'registry',
+            'name': 'registry',
         }
         s = Schema(
             href='url',

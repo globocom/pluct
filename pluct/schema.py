@@ -18,7 +18,7 @@ class Schema(IterableUserDict, object):
         if href in session.store:
             return session.store[href]
 
-        instance = super(Schema, cls).__new__(cls, href, *args, **kwargs)
+        instance = super(Schema, cls).__new__(cls)
         session.store[href] = instance
 
         if pointer:
@@ -43,7 +43,7 @@ class Schema(IterableUserDict, object):
 
     def expand_refs(self, item):
         if self._is_simple_dict(item):
-            iterator = item.iteritems()
+            iterator = iter(item.items())
         elif isinstance(item, list):
             iterator = enumerate(item)
         else:

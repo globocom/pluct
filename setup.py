@@ -18,6 +18,7 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Operating System :: Unix',
         'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.6',
     ],
     test_suite='pluct.tests',
     packages=find_packages(exclude=('pluct.tests.*', 'pluct.tests')),

@@ -2,8 +2,12 @@
 
 import uritemplate
 import jsonpointer
-import urlparse
 import json
+
+try:
+    from urllib.parse import urlparse, urljoin
+except ImportError:
+    from urlparse import urlparse, urljoin
 
 from jsonschema import SchemaError, validate, ValidationError, RefResolver
 
@@ -51,11 +55,11 @@ class Resource(object):
 
         uri = self.expand_uri(name, **params)
 
-        if not urlparse.urlparse(uri).netloc:
-            uri = urlparse.urljoin(self.url, uri)
+        if not urlparse(uri).netloc:
+            uri = urljoin(self.url, uri)
         if 'params' in kwargs:
             unused_params = {
-                k: v for k, v in params.items() if k not in variables}
+                k: v for k, v in list(params.items()) if k not in variables}
             kwargs['params'] = unused_params
 
         if "data" in kwargs:
@@ -147,7 +151,7 @@ class ObjectResource(datastructures.IterableUserDict, Resource, dict):
         return {}
 
     def iterate_items(self):
-        return self.data.iteritems()
+        return iter(self.data.items())
 
     def item_schema(self, key):
         href = '#/{0}/{1}'.format(self.SCHEMA_PREFIX, key)
